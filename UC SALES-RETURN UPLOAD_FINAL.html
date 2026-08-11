@@ -1,0 +1,1901 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UC to SAP Order Upload Mapper</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  :root {
+    --bg: #F4F5F7; --banner-bg: #FFFFFF; --accent: #0B2E59; --accent-active: #082140;
+    --text: #20242C; --muted: #5B6472; --entry-bg: #FFFFFF; --card-bg: #FFFFFF;
+    --border: #D9DCE1; --track: #DDE3EC; --log-bg: #0B2E59; --log-fg: #DCE6F2;
+    --accent-rgb: 11,46,89;
+    --glass-bg: rgba(255,255,255,0.62); --glass-border: rgba(255,255,255,0.55);
+    --shadow: 0 10px 30px rgba(11,46,89,0.09), 0 2px 8px rgba(11,46,89,0.06);
+    --radius: 14px; --radius-sm: 8px;
+    --success: #0F6E56; --success-bg: rgba(15,110,86,0.10); --success-rgb: 15,110,86;
+    --error: #A32D2D; --error-bg: rgba(163,45,45,0.10); --error-rgb: 163,45,45;
+    --scrollbar-thumb: rgba(11,46,89,0.28); --scrollbar-track: rgba(11,46,89,0.05);
+    --chip-bg: rgba(11,46,89,0.08); --chip-border: rgba(11,46,89,0.22); --chip-text: #0B2E59;
+    --orb1: rgba(11,46,89,0.10); --orb2: rgba(91,155,255,0.12); --orb3: rgba(11,46,89,0.05);
+    --page-grad: radial-gradient(1200px 800px at 8% -10%, var(--orb1), transparent 60%),
+                 radial-gradient(1000px 700px at 110% 10%, var(--orb2), transparent 55%),
+                 radial-gradient(900px 900px at 50% 120%, var(--orb3), transparent 60%),
+                 linear-gradient(180deg, #F7F8FA 0%, #EEF1F5 100%);
+  }
+  [data-theme="charcoal"] {
+    --bg: #F5F4F2; --accent: #2B2B2B; --accent-active: #161616; --muted: #6B6B6B;
+    --border: #E0DCC8; --track: #E7E2D0; --log-bg: #2B2B2B; --log-fg: #EDE7D5;
+    --accent-rgb: 43,43,43;
+    --glass-bg: rgba(255,255,255,0.60); --glass-border: rgba(255,255,255,0.5);
+    --shadow: 0 10px 30px rgba(43,43,43,0.10);
+    --success: #6B7B2A; --success-bg: rgba(107,123,42,0.10); --success-rgb: 107,123,42;
+    --error: #8A3A1E; --error-bg: rgba(138,58,30,0.10); --error-rgb: 138,58,30;
+    --scrollbar-thumb: rgba(43,43,43,0.28); --scrollbar-track: rgba(43,43,43,0.05);
+    --chip-bg: rgba(201,162,39,0.14); --chip-border: rgba(201,162,39,0.4); --chip-text: #8A6D12;
+    --orb1: rgba(201,162,39,0.14); --orb2: rgba(43,43,43,0.08); --orb3: rgba(201,162,39,0.08);
+    --page-grad: radial-gradient(1200px 800px at 8% -10%, var(--orb1), transparent 60%),
+                 radial-gradient(1000px 700px at 110% 10%, var(--orb2), transparent 55%),
+                 radial-gradient(900px 900px at 50% 120%, var(--orb3), transparent 60%),
+                 linear-gradient(180deg, #F8F7F3 0%, #EFEDE4 100%);
+  }
+  [data-theme="maroon"] {
+    --bg: #F6F4F4; --accent: #7A1F2B; --accent-active: #5A1620; --muted: #6B6060;
+    --border: #E6D2D4; --track: #EEDBDD; --log-bg: #7A1F2B; --log-fg: #F5DEE1;
+    --accent-rgb: 122,31,43;
+    --glass-bg: rgba(255,255,255,0.60); --glass-border: rgba(255,255,255,0.5);
+    --shadow: 0 10px 30px rgba(122,31,43,0.10);
+    --success: #0F6E56; --success-bg: rgba(15,110,86,0.10); --success-rgb: 15,110,86;
+    --error: #A32D2D; --error-bg: rgba(163,45,45,0.10); --error-rgb: 163,45,45;
+    --scrollbar-thumb: rgba(122,31,43,0.28); --scrollbar-track: rgba(122,31,43,0.05);
+    --chip-bg: rgba(122,31,43,0.09); --chip-border: rgba(122,31,43,0.25); --chip-text: #7A1F2B;
+    --orb1: rgba(122,31,43,0.12); --orb2: rgba(216,120,132,0.14); --orb3: rgba(122,31,43,0.06);
+    --page-grad: radial-gradient(1200px 800px at 8% -10%, var(--orb1), transparent 60%),
+                 radial-gradient(1000px 700px at 110% 10%, var(--orb2), transparent 55%),
+                 radial-gradient(900px 900px at 50% 120%, var(--orb3), transparent 60%),
+                 linear-gradient(180deg, #F8F5F5 0%, #F0E9E9 100%);
+  }
+  [data-theme="forest"] {
+    --bg: #F3F5F3; --accent: #1F4D3A; --accent-active: #153A2B; --muted: #5E6B63;
+    --border: #D3E0D9; --track: #DCE7E1; --log-bg: #1F4D3A; --log-fg: #DCEDE4;
+    --accent-rgb: 31,77,58;
+    --glass-bg: rgba(255,255,255,0.60); --glass-border: rgba(255,255,255,0.5);
+    --shadow: 0 10px 30px rgba(31,77,58,0.10);
+    --success: #1F4D3A; --success-bg: rgba(31,77,58,0.10); --success-rgb: 31,77,58;
+    --error: #A32D2D; --error-bg: rgba(163,45,45,0.10); --error-rgb: 163,45,45;
+    --scrollbar-thumb: rgba(31,77,58,0.28); --scrollbar-track: rgba(31,77,58,0.05);
+    --chip-bg: rgba(31,77,58,0.09); --chip-border: rgba(31,77,58,0.25); --chip-text: #1F4D3A;
+    --orb1: rgba(31,77,58,0.12); --orb2: rgba(112,180,150,0.14); --orb3: rgba(31,77,58,0.06);
+    --page-grad: radial-gradient(1200px 800px at 8% -10%, var(--orb1), transparent 60%),
+                 radial-gradient(1000px 700px at 110% 10%, var(--orb2), transparent 55%),
+                 radial-gradient(900px 900px at 50% 120%, var(--orb3), transparent 60%),
+                 linear-gradient(180deg, #F5F7F5 0%, #ECF1EE 100%);
+  }
+  [data-theme="dark"] {
+    --bg: #161B22; --banner-bg: #1F2733; --accent: #5B9BFF; --accent-active: #7FB0FF;
+    --text: #EAF0F8; --muted: #96A3B8; --entry-bg: #242C39; --card-bg: #1F2733;
+    --border: #2D3745; --track: #2D3745; --log-bg: #0D1117; --log-fg: #C4D3E8;
+    --accent-rgb: 91,155,255;
+    --glass-bg: rgba(31,39,51,0.55); --glass-border: rgba(255,255,255,0.08);
+    --shadow: 0 12px 34px rgba(0,0,0,0.45);
+    --success: #4ADE9C; --success-bg: rgba(74,222,156,0.12); --success-rgb: 74,222,156;
+    --error: #FF7A7A; --error-bg: rgba(255,122,122,0.12); --error-rgb: 255,122,122;
+    --scrollbar-thumb: rgba(91,155,255,0.35); --scrollbar-track: rgba(255,255,255,0.04);
+    --chip-bg: rgba(91,155,255,0.14); --chip-border: rgba(91,155,255,0.35); --chip-text: #9CC4FF;
+    --orb1: rgba(91,155,255,0.16); --orb2: rgba(91,155,255,0.10); --orb3: rgba(150,90,255,0.10);
+    --page-grad: radial-gradient(1200px 800px at 8% -10%, var(--orb1), transparent 60%),
+                 radial-gradient(1000px 700px at 110% 10%, var(--orb3), transparent 55%),
+                 radial-gradient(900px 900px at 50% 120%, var(--orb2), transparent 60%),
+                 linear-gradient(180deg, #12161D 0%, #0E1116 100%);
+  }
+
+  * { box-sizing: border-box; }
+  html { scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track); }
+  html.theme-transition, html.theme-transition * {
+    transition: background-color .35s ease, border-color .35s ease, color .35s ease,
+                box-shadow .35s ease, opacity .35s ease !important;
+  }
+  body {
+    margin: 0; color: var(--text); min-height: 100vh;
+    font-family: "Segoe UI", Helvetica, Arial, sans-serif; font-size: 14px;
+    background: var(--page-grad); background-attachment: fixed;
+    position: relative;
+  }
+  /* ---- floating ambient orbs (subtle, behind content) ---- */
+  .bg-orb {
+    position: fixed; border-radius: 50%; filter: blur(50px); pointer-events: none; z-index: 0;
+    opacity: 0.9; animation: floaty 22s ease-in-out infinite;
+  }
+  .bg-orb.o1 { width: 380px; height: 380px; top: -120px; left: -100px; background: var(--orb1); animation-duration: 26s; }
+  .bg-orb.o2 { width: 300px; height: 300px; top: 30%; right: -120px; background: var(--orb2); animation-duration: 20s; animation-delay: -6s; }
+  .bg-orb.o3 { width: 340px; height: 340px; bottom: -140px; left: 30%; background: var(--orb3); animation-duration: 24s; animation-delay: -12s; }
+  @keyframes floaty {
+    0%, 100% { transform: translate(0,0) scale(1); }
+    33% { transform: translate(30px,-24px) scale(1.06); }
+    66% { transform: translate(-24px,18px) scale(0.96); }
+  }
+  @media (prefers-reduced-motion: reduce) {
+    .bg-orb { animation: none; }
+  }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: var(--scrollbar-track); border-radius: 8px; }
+  ::-webkit-scrollbar-thumb { background: var(--scrollbar-thumb); border-radius: 8px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+
+  .banner {
+    background: var(--glass-bg); backdrop-filter: blur(14px); -webkit-backdrop-filter: blur(14px);
+    border-bottom: 1px solid var(--glass-border);
+    box-shadow: 0 1px 0 rgba(var(--accent-rgb),0.12);
+    position: sticky; top: 0; z-index: 20;
+  }
+  .banner-inner {
+    max-width: 1160px; margin: 0 auto; padding: 20px 24px 16px;
+    display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 14px;
+  }
+  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--accent); }
+  .title {
+    font-family: Georgia, "Times New Roman", serif; font-size: 27px; font-weight: 700; margin: 4px 0 2px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-active));
+    -webkit-background-clip: text; background-clip: text; color: transparent;
+  }
+  .subtitle { font-size: 13px; color: var(--muted); }
+  .header-controls { display: flex; align-items: flex-end; gap: 18px; flex-wrap: wrap; }
+  .theme-picker { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .theme-picker label { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; color: var(--accent); }
+
+  .sound-quick-toggle {
+    display: flex; align-items: center; gap: 6px; background: var(--entry-bg);
+    border: 1px solid var(--border); border-radius: 999px; padding: 6px 12px; cursor: pointer;
+    font-size: 12px; font-weight: 700; color: var(--text); transition: all .18s ease; user-select: none;
+  }
+  .sound-quick-toggle:hover { border-color: var(--accent); transform: translateY(-1px); box-shadow: var(--shadow); }
+  .sound-quick-toggle .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); transition: background .2s ease, box-shadow .2s ease; }
+  .sound-quick-toggle.on .dot { background: var(--success); box-shadow: 0 0 8px rgba(var(--success-rgb),0.7); }
+
+  select, input[type=text] {
+    background: var(--entry-bg); color: var(--text); border: 1px solid var(--border);
+    border-radius: var(--radius-sm); padding: 7px 10px; font-size: 13px;
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  select:focus, input[type=text]:focus {
+    outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(var(--accent-rgb),0.15);
+  }
+  input[type=checkbox] { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
+
+  .container { max-width: 1160px; margin: 0 auto; padding: 20px 24px 48px; position: relative; z-index: 1; }
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 20px; flex-wrap: wrap; }
+  .tab-btn {
+    background: transparent; color: var(--muted); border: none; padding: 10px 18px;
+    font-size: 13px; font-weight: 700; cursor: pointer; border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+    transition: color .15s ease, background .15s ease, transform .12s ease;
+  }
+  .tab-btn:hover { color: var(--text); background: rgba(var(--accent-rgb), 0.06); }
+  .tab-btn:active { transform: scale(0.97); }
+  .tab-btn.active { background: var(--accent); color: #fff; box-shadow: var(--shadow); }
+  .tab-panel { display: none; animation: fadein .28s ease; }
+  .tab-panel.active { display: block; }
+  @keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  .section-label {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: var(--accent);
+    text-transform: uppercase; margin: 18px 0 8px;
+  }
+  .muted { color: var(--muted); font-size: 12px; }
+
+  .dropzone {
+    border: 1.5px dashed var(--border); background: var(--glass-bg); backdrop-filter: blur(8px);
+    border-radius: var(--radius); padding: 18px; display: flex; align-items: center; justify-content: space-between;
+    gap: 12px; cursor: pointer; transition: border-color .18s ease, background .18s ease, transform .12s ease, box-shadow .18s ease;
+  }
+  .dropzone:hover { border-color: var(--accent); box-shadow: var(--shadow); transform: translateY(-1px); }
+  .dropzone.dragover { border-color: var(--accent); border-style: solid; background: rgba(var(--accent-rgb),0.06); box-shadow: 0 0 0 4px rgba(var(--accent-rgb),0.12); }
+  .dropzone .hint { color: var(--muted); font-size: 13px; }
+  .dropzone .hint.has-file { color: var(--text); font-weight: 600; }
+
+  button {
+    font-family: inherit; font-size: 13px; font-weight: 700; border-radius: var(--radius-sm);
+    padding: 9px 16px; cursor: pointer; background: var(--entry-bg); color: var(--text);
+    border: 1px solid var(--border); transition: transform .12s ease, box-shadow .15s ease, background .15s ease, border-color .15s ease;
+  }
+  button:hover:not(:disabled) { border-color: var(--accent); box-shadow: var(--shadow); transform: translateY(-1px); }
+  button:active:not(:disabled) { transform: translateY(0) scale(0.97); }
+  button.primary { background: linear-gradient(135deg, var(--accent), var(--accent-active)); color: #fff; border: none; }
+  button.primary:hover:not(:disabled) { filter: brightness(1.08); box-shadow: 0 6px 20px rgba(var(--accent-rgb),0.35); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
+  .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0; }
+
+  /* ---- Creative progress bar ---- */
+  .progress-wrap { margin: 12px 0 6px; }
+  .progress-row { display: flex; align-items: center; gap: 10px; }
+  .progress-track {
+    flex: 1; height: 16px; background: var(--track); border-radius: 999px; overflow: hidden;
+    position: relative; box-shadow: inset 0 1px 3px rgba(0,0,0,0.12);
+  }
+  .progress-fill {
+    height: 100%; width: 0%; border-radius: 999px; position: relative; overflow: hidden;
+    background: linear-gradient(90deg, var(--accent), var(--accent-active), var(--accent));
+    background-size: 200% 100%;
+    box-shadow: 0 0 10px rgba(var(--accent-rgb), 0.55);
+    transition: width .35s cubic-bezier(.4,0,.2,1);
+    animation: fillshift 3s linear infinite;
+  }
+  @keyframes fillshift { 0% { background-position: 0% 0; } 100% { background-position: 200% 0; } }
+  .progress-fill::after {
+    content: ""; position: absolute; inset: 0;
+    background: repeating-linear-gradient(-45deg, rgba(255,255,255,0.28) 0 8px, transparent 8px 16px);
+    background-size: 32px 32px; animation: particles 1.1s linear infinite; opacity: 0.55;
+  }
+  @keyframes particles { from { background-position: 0 0; } to { background-position: 32px 0; } }
+  .progress-fill::before {
+    content: ""; position: absolute; top: 0; bottom: 0; width: 40%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.55), transparent);
+    animation: shimmer 1.6s ease-in-out infinite;
+  }
+  @keyframes shimmer { 0% { left: -40%; } 100% { left: 110%; } }
+  .progress-wrap.progress-complete .progress-fill { animation: none; box-shadow: 0 0 16px rgba(var(--success-rgb),0.7); background: linear-gradient(90deg, var(--success), var(--success)); }
+  .progress-wrap.progress-complete .progress-fill::before, .progress-wrap.progress-complete .progress-fill::after { animation: none; opacity: 0; }
+  .progress-wrap.progress-complete .progress-track { animation: completepulse .6s ease; }
+  @keyframes completepulse { 0% { box-shadow: inset 0 1px 3px rgba(0,0,0,0.12); } 50% { box-shadow: 0 0 0 6px rgba(var(--success-rgb),0.18); } 100% { box-shadow: inset 0 1px 3px rgba(0,0,0,0.12); } }
+  .status-text { font-size: 12px; min-width: 90px; text-align: right; font-weight: 700; color: var(--muted); transition: color .2s ease; }
+  .status-text.complete { color: var(--success); }
+  .status-text.errored { color: var(--error); }
+
+  .progress-steps { display: flex; flex-wrap: wrap; gap: 4px 10px; margin-top: 8px; }
+  .progress-steps span {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.03em; color: var(--muted);
+    padding: 3px 8px; border-radius: 999px; background: var(--entry-bg); border: 1px solid var(--border);
+    transition: all .2s ease;
+  }
+  .progress-steps span.active { color: #fff; background: var(--accent); border-color: var(--accent); box-shadow: 0 0 8px rgba(var(--accent-rgb),0.5); }
+  .progress-steps span.done { color: var(--success); border-color: var(--success-bg); background: var(--success-bg); }
+  .progress-steps span.done::before { content: "✓ "; }
+
+  .log {
+    background: var(--log-bg); color: var(--log-fg); font-family: Consolas, monospace;
+    font-size: 12px; padding: 12px; border-radius: var(--radius-sm); height: 140px; overflow-y: auto;
+    white-space: pre-wrap; margin-bottom: 14px; box-shadow: var(--shadow); border: 1px solid var(--glass-border);
+  }
+  .log:empty::before { content: "Activity will appear here once you generate a file..."; opacity: 0.55; }
+
+  table.preview { border-collapse: collapse; width: 100%; font-size: 11px; }
+  table.preview th, table.preview td {
+    border: 1px solid var(--border); padding: 5px 7px; text-align: left; white-space: nowrap;
+  }
+  table.preview th { background: var(--glass-bg); font-weight: 700; position: sticky; top: 0; color: var(--accent); }
+  table.preview tbody tr:hover { background: rgba(var(--accent-rgb), 0.05); }
+  .preview-scroll {
+    max-height: 260px; overflow: auto; border: 1px solid var(--border); border-radius: var(--radius);
+    margin-bottom: 20px; background: var(--card-bg); box-shadow: var(--shadow);
+  }
+  .preview-empty { padding: 26px 14px; text-align: center; color: var(--muted); font-size: 12.5px; }
+
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin: 14px 0; }
+  .card {
+    background: var(--glass-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
+    border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 14px 16px;
+    box-shadow: var(--shadow); transition: transform .15s ease, box-shadow .15s ease;
+  }
+  .card:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(var(--accent-rgb),0.14); }
+  .card .label { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; color: var(--muted); text-transform: uppercase; }
+  .card .value { font-family: Georgia, serif; font-size: 21px; font-weight: 700; margin-top: 5px; color: var(--text); }
+
+  .match-indicator { font-size: 13px; font-weight: 700; margin: 10px 0; padding: 8px 12px; border-radius: var(--radius-sm); display: inline-block; }
+  .match-indicator.ok { color: var(--success); background: var(--success-bg); }
+  .match-indicator.warn { color: var(--error); background: var(--error-bg); }
+  .match-indicator.neutral { color: var(--muted); background: var(--entry-bg); border: 1px solid var(--border); }
+  .match-indicator:empty { display: none; }
+
+  .reminder-box {
+    background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border);
+    border-left: 4px solid var(--accent); border-radius: var(--radius-sm);
+    padding: 14px 18px; margin: 14px 0; font-size: 12.5px; line-height: 1.55; box-shadow: var(--shadow);
+  }
+  .reminder-box b { color: var(--accent); }
+
+  .field-row { display: flex; align-items: center; gap: 10px; margin: 10px 0; flex-wrap: wrap; }
+  .checkbox-row { display: flex; align-items: center; gap: 6px; font-size: 13px; }
+  .field-label { font-size: 12px; font-weight: 700; color: var(--accent); }
+
+  a.download-link {
+    display: inline-block; background: linear-gradient(135deg, var(--accent), var(--accent-active)); color: white; text-decoration: none;
+    padding: 9px 16px; border-radius: var(--radius-sm); font-weight: 700; font-size: 13px; margin-top: 6px;
+  }
+  pre.about-text { white-space: pre-wrap; font-family: "Segoe UI", sans-serif; font-size: 12.5px; line-height: 1.65; }
+
+  /* ---- Marketplace multi-select dropdown ---- */
+  .ms-dropdown { position: relative; min-width: 260px; }
+  .ms-toggle {
+    width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+    background: var(--entry-bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
+    padding: 8px 12px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text);
+    transition: border-color .15s ease, box-shadow .15s ease;
+  }
+  .ms-toggle:hover { border-color: var(--accent); }
+  .ms-dropdown.open .ms-toggle { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(var(--accent-rgb),0.15); }
+  .ms-toggle-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; flex: 1; }
+  .ms-caret { transition: transform .2s ease; color: var(--muted); flex-shrink: 0; }
+  .ms-dropdown.open .ms-caret { transform: rotate(180deg); color: var(--accent); }
+
+  .ms-panel {
+    position: absolute; top: calc(100% + 6px); left: 0; right: 0; z-index: 30;
+    background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border); border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 10px; opacity: 0; transform: translateY(-6px) scale(0.98); pointer-events: none;
+    transition: opacity .18s ease, transform .18s ease; max-height: 320px; overflow: auto;
+  }
+  .ms-dropdown.open .ms-panel { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+
+  .ms-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; min-height: 0; }
+  .ms-chips:empty { display: none; }
+  .ms-chip {
+    display: inline-flex; align-items: center; gap: 5px; background: var(--chip-bg); color: var(--chip-text);
+    border: 1px solid var(--chip-border); border-radius: 999px; padding: 3px 8px 3px 10px; font-size: 11.5px; font-weight: 700;
+    animation: chipin .15s ease;
+  }
+  @keyframes chipin { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
+  .ms-chip button {
+    all: unset; cursor: pointer; font-size: 12px; line-height: 1; padding: 1px 2px; border-radius: 50%;
+    color: var(--chip-text); opacity: 0.7;
+  }
+  .ms-chip button:hover { opacity: 1; background: rgba(var(--accent-rgb),0.15); }
+
+  .ms-actions { display: flex; gap: 8px; margin-bottom: 8px; }
+  .ms-actions button {
+    flex: 1; padding: 6px 8px; font-size: 11.5px; border-radius: var(--radius-sm);
+  }
+  .ms-options { display: flex; flex-direction: column; gap: 2px; }
+  .ms-option {
+    display: flex; align-items: center; gap: 9px; padding: 7px 8px; border-radius: var(--radius-sm);
+    cursor: pointer; font-size: 13px; transition: background .12s ease;
+  }
+  .ms-option:hover { background: rgba(var(--accent-rgb), 0.08); }
+  .ms-option input { pointer-events: none; }
+  .ms-option span.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); opacity: 0; transition: opacity .12s ease; }
+  .ms-option.checked span.dot { opacity: 1; }
+
+  /* ---- Micro tooltip ---- */
+  [data-tip] { position: relative; }
+  [data-tip]:hover::after {
+    content: attr(data-tip); position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
+    background: var(--text); color: var(--bg); font-size: 11px; font-weight: 600; padding: 5px 9px;
+    border-radius: 6px; white-space: nowrap; box-shadow: var(--shadow); z-index: 40; pointer-events: none;
+    animation: tipin .12s ease;
+  }
+  @keyframes tipin { from { opacity: 0; transform: translateX(-50%) translateY(3px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
+
+  /* ---- Responsive ---- */
+  @media (max-width: 760px) {
+    .banner-inner { padding: 16px 16px 14px; }
+    .title { font-size: 22px; }
+    .container { padding: 16px 16px 40px; }
+    .card-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
+    .ms-dropdown { min-width: 0; width: 100%; }
+    .tabs { gap: 2px; }
+    .tab-btn { padding: 8px 12px; font-size: 12px; }
+    .dropzone { flex-direction: column; align-items: stretch; text-align: center; }
+    .header-controls { width: 100%; justify-content: space-between; }
+    .status-text { min-width: 70px; }
+    table.preview { font-size: 10px; }
+  }
+  @media (max-width: 480px) {
+    .btn-row button { flex: 1 1 auto; }
+    .progress-steps span { font-size: 9px; padding: 2px 6px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="bg-orb o1"></div>
+<div class="bg-orb o2"></div>
+<div class="bg-orb o3"></div>
+
+<div class="banner">
+  <div class="banner-inner">
+    <div>
+      <div class="eyebrow">SALES OPERATIONS &middot; ORDER UPLOAD AUTOMATION</div>
+      <div class="title">UC to SAP Order Upload Mapper</div>
+      <div class="subtitle">Mapping is built in &mdash; drop today's dump file to begin</div>
+    </div>
+    <div class="header-controls">
+      <div class="sound-quick-toggle on" id="soundQuickToggle" data-tip="Toggle sound">
+        <span class="dot"></span><span id="soundQuickLabel">Sound On</span>
+      </div>
+      <div class="theme-picker">
+        <label for="themeSelect">THEME</label>
+        <select id="themeSelect">
+          <option value="navy">Navy Advisory</option>
+          <option value="charcoal">Charcoal &amp; Gold</option>
+          <option value="maroon">Maroon Assurance</option>
+          <option value="forest">Forest Consulting</option>
+          <option value="dark">Dark</option>
+        </select>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="container">
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
+    <button class="tab-btn" data-tab="sales">Sales Upload</button>
+    <button class="tab-btn" data-tab="return">Return Upload</button>
+    <button class="tab-btn" data-tab="settings">Settings</button>
+    <button class="tab-btn" data-tab="about">About</button>
+  </div>
+
+  <!-- ==================== DASHBOARD TAB ==================== -->
+  <div class="tab-panel active" id="tab-dashboard">
+    <div class="section-label">Dashboard &mdash; Input vs Output</div>
+    <div class="card-grid">
+      <div class="card"><div class="label">Input Qty</div><div class="value" id="dashInputQty">-</div></div>
+      <div class="card"><div class="label">Output Qty</div><div class="value" id="dashOutputQty">-</div></div>
+      <div class="card"><div class="label">Input Value</div><div class="value" id="dashInputValue">-</div></div>
+      <div class="card"><div class="label">Output Value</div><div class="value" id="dashOutputValue">-</div></div>
+      <div class="card"><div class="label">Last Sales Run</div><div class="value" id="dashLastSales" style="font-size:15px">-</div></div>
+      <div class="card"><div class="label">Last Return Run</div><div class="value" id="dashLastReturn" style="font-size:15px">-</div></div>
+      <div class="card"><div class="label">Sales History Entries</div><div class="value" id="dashHistoryCount" style="font-size:15px">0</div></div>
+    </div>
+    <div class="match-indicator neutral" id="dashMatchIndicator"></div>
+    <div class="muted">Sales value based on 'Total Price' / 'ORD_TOT' (to be confirmed).</div>
+
+    <div class="reminder-box">
+      <b>Reminder &mdash; how RP Code works for Returns:</b> every time you run a Sales Upload in this browser,
+      the tool remembers each order/SKU's Shipping Package Code. When you later process a Return, it looks up
+      RP Code from that memory by matching Sale Order Number + Product SKU Code. If a return's order was never
+      seen in a Sales run <i>on this browser</i>, RP Code is left blank &mdash; it is never guessed.
+      Sales history is stored in this browser only (not shared automatically across computers) &mdash;
+      use <b>Export / Import History</b> under Settings to move it between machines.
+    </div>
+  </div>
+
+  <!-- ==================== SALES TAB ==================== -->
+  <div class="tab-panel" id="tab-sales">
+    <div class="section-label">Sales Upload</div>
+    <div class="muted">Generates the SAP sales upload using the built-in Unicommerce to SAP header mapping.</div>
+
+    <div class="field-row">
+      <label class="field-label" id="salesMarketplaceLabel">MARKETPLACE FILTER</label>
+      <div class="ms-dropdown" id="marketplaceDropdown">
+        <button type="button" class="ms-toggle" id="marketplaceToggle" aria-haspopup="listbox" aria-expanded="false">
+          <span class="ms-toggle-text" id="marketplaceToggleText">All marketplaces</span>
+          <span class="ms-caret">&#9662;</span>
+        </button>
+        <div class="ms-panel" id="marketplacePanel" role="listbox">
+          <div class="ms-chips" id="marketplaceChips"></div>
+          <div class="ms-actions">
+            <button type="button" id="marketplaceSelectAll">Select All</button>
+            <button type="button" id="marketplaceClearAll">Clear All</button>
+          </div>
+          <div class="ms-options" id="marketplaceOptions"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-label" style="margin-top:14px;">Today's Unicommerce Dump File (.csv or .xlsx)</div>
+    <div class="dropzone" id="salesDropzone">
+      <span class="hint" id="salesHint">Drag &amp; drop a file here, or click to browse</span>
+      <button id="salesBrowseBtn" type="button">Browse...</button>
+      <input type="file" id="salesFileInput" accept=".csv,.xlsx,.xls,.xltx,.xlsm" style="display:none;">
+    </div>
+    <div class="field-row" id="salesSheetRow" style="display:none;">
+      <label class="field-label">SHEET</label>
+      <select id="salesSheetSelect"></select>
+    </div>
+
+    <div class="btn-row">
+      <button class="primary" id="salesGenerateBtn">Generate SAP Upload File</button>
+      <button id="salesDownloadBtn" disabled>Download SAP Upload File</button>
+      <button id="salesClearBtn">Clear / Reset</button>
+    </div>
+
+    <div class="progress-wrap" id="salesProgressWrap">
+      <div class="progress-row">
+        <div class="progress-track"><div class="progress-fill" id="salesProgressFill"></div></div>
+        <div class="status-text" id="salesStatus">Ready</div>
+      </div>
+      <div class="progress-steps" id="salesSteps">
+        <span>Uploading</span><span>Validating</span><span>Mapping</span><span>Processing</span><span>Reconciling</span><span>Finalizing</span><span>Complete</span>
+      </div>
+    </div>
+
+    <div class="section-label">Activity Log</div>
+    <div class="log" id="salesLog"></div>
+
+    <div class="section-label">Output Preview (first 100 rows)</div>
+    <div class="preview-scroll"><table class="preview" id="salesPreviewTable"></table></div>
+  </div>
+
+  <!-- ==================== RETURN TAB ==================== -->
+  <div class="tab-panel" id="tab-return">
+    <div class="section-label">Return Upload</div>
+    <div class="muted">Total = raw Total &minus; Other charges; Unit Price = raw Total / Qty; RP Code is looked up from Sales history.</div>
+
+    <div class="section-label" style="margin-top:14px;">Today's Return Dump File (.csv or .xlsx)</div>
+    <div class="dropzone" id="returnDropzone">
+      <span class="hint" id="returnHint">Drag &amp; drop a file here, or click to browse</span>
+      <button id="returnBrowseBtn" type="button">Browse...</button>
+      <input type="file" id="returnFileInput" accept=".csv,.xlsx,.xls,.xltx,.xlsm" style="display:none;">
+    </div>
+    <div class="field-row" id="returnSheetRow" style="display:none;">
+      <label class="field-label">SHEET</label>
+      <select id="returnSheetSelect"></select>
+    </div>
+
+    <div class="btn-row">
+      <button class="primary" id="returnGenerateBtn">Generate Return SAP Upload File</button>
+      <button id="returnDownloadBtn" disabled>Download Return SAP Upload File</button>
+      <button id="returnClearBtn">Clear / Reset</button>
+    </div>
+
+    <div class="progress-wrap" id="returnProgressWrap">
+      <div class="progress-row">
+        <div class="progress-track"><div class="progress-fill" id="returnProgressFill"></div></div>
+        <div class="status-text" id="returnStatus">Ready</div>
+      </div>
+      <div class="progress-steps" id="returnSteps">
+        <span>Uploading</span><span>Validating</span><span>Mapping</span><span>Processing</span><span>Reconciling</span><span>Finalizing</span><span>Complete</span>
+      </div>
+    </div>
+
+    <div class="section-label">Activity Log</div>
+    <div class="log" id="returnLog"></div>
+
+    <div class="section-label">Output Preview (first 100 rows)</div>
+    <div class="preview-scroll"><table class="preview" id="returnPreviewTable"></table></div>
+  </div>
+
+  <!-- ==================== SETTINGS TAB ==================== -->
+  <div class="tab-panel" id="tab-settings">
+    <div class="section-label">Settings</div>
+    <div class="muted">Saved automatically in this browser.</div>
+
+    <div class="checkbox-row" style="margin-top:16px;">
+      <input type="checkbox" id="soundToggle" checked>
+      <label for="soundToggle">Sound on key steps (start, progress, done, error)</label>
+    </div>
+
+    <div class="section-label">Sales History (for Return RP Code lookup)</div>
+    <div class="muted" id="historyStatus">0 order/SKU entries stored in this browser.</div>
+    <div class="btn-row">
+      <button id="exportHistoryBtn">Export History...</button>
+      <button id="importHistoryBtn">Import History...</button>
+      <input type="file" id="importHistoryInput" accept=".json" style="display:none;">
+      <button id="clearHistoryBtn">Clear Sales History</button>
+    </div>
+
+    <div class="section-label">Mapping</div>
+    <div class="muted" id="mappingInfo"></div>
+  </div>
+
+  <!-- ==================== ABOUT TAB ==================== -->
+  <div class="tab-panel" id="tab-about">
+    <div class="section-label">About</div>
+    <pre class="about-text" id="aboutText"></pre>
+  </div>
+</div>
+
+<script>
+// ============================================================================
+// UC to SAP Order Upload Mapper - Core Logic (no DOM dependencies)
+// Testable standalone with Node.js; also embedded directly in index.html.
+// UNCHANGED FROM ORIGINAL — do not modify calculations/mappings/validations here.
+// ============================================================================
+
+// ---- Sales header mapping (SAP field -> Unicommerce column name) ----------
+const MAPPING_DATA = [
+  ["PORTAL_ID", "Display Order Code"],
+  ["PORT_SORDER", "Sale Order Code"],
+  ["SPACK_CODE", "Shipping Package Code"],
+  ["MATNR", "Item SKU Code"],
+  ["ORDER_DATE", "Order Date as dd/mm/yyyy hh:MM:ss"],
+  ["CHANNEL", "Channel Name"],
+  ["SHIP_PROVIDER", "Shipping provider"],
+  ["SHIP_COURIER", "Shipping Courier"],
+  ["ZTERM", "COD"],
+  ["POSTAL_CODE", "Shipping Address Pincode"],
+  ["MAKTX", "Item Type Name"],
+  ["MRP", "MRP"],
+  ["DISC", "Discount"],
+  ["SALE_PRICE", "Selling Price"],
+  ["ORD_SHP_CRG", "Shipping Charges"],
+  ["ORD_COD_CRG", "COD Service Charges"],
+  ["ORD_TOT", "Total Price"],
+  ["SPACK_STATUS", "Shipping Package Status Code"],
+  ["SPACK_SORDER", "Sale Order Code"],
+  ["SPACK_TYPE", "Shipping Method"],
+  ["PAYMENT_GATEWAY", "Gateway"],
+  ["CUSTOMER_GSTIN", null],
+  ["ORIG_INVOICE", "Invoice Code"],
+  ["FACILITY", "Facility"],
+  ["AWB_NUMBER", "Tracking Number"],
+  ["DISPATCH_DATE", "Dispatch Date"],
+  ["SALES_ORD_ITEM_CODE", null],
+  ["SHP_ADR_STATE", "Shipping Address State"],
+  ["CITY", "Shipping Address City"],
+  ["SHP_METHOD", null],
+  ["CHARG", "Batch Code"],
+  ["VEN_BATCH_NUM", "Vendor Batch Number"],
+  ["CURRENCY", "Currency"],
+  ["GATEWAY_REF", null],
+  ["TRANSID", null],
+];
+
+// ---- Value overrides (SPACK_STATUS: RETURNED/RETURN_EXPECTED -> Shipped) --
+const VALUE_OVERRIDES = {
+  SPACK_STATUS: { RETURNED: "Shipped", RETURN_EXPECTED: "Shipped" },
+};
+
+// ---- Channel detection (matched against Display Order Code) ---------------
+const CHANNEL_PATTERNS = [
+  ["Amazon", /^[14]\d{2}-\d{7}-\d{7}$/],
+  ["Zandu Care", /^ZN/i],
+  ["Kiosk", /^SO/i],
+  ["Flipkart", /^OD/i],
+  ["JioMart", /^JM/i],
+  ["Kesh-King", /^KK/i],
+  ["Dpanda", /^\d{4,5}$/],
+];
+
+function detectChannel(orderId) {
+  if (orderId === null || orderId === undefined) return "Unknown";
+  const s = String(orderId).trim();
+  if (!s) return "Unknown";
+  for (const [name, pattern] of CHANNEL_PATTERNS) {
+    if (pattern.test(s)) return name;
+  }
+  return "Other";
+}
+
+function filterRowsByChannel(headerIndex, dataRows, channelName, orderIdCol = "Display Order Code") {
+  const idx = headerIndex[norm(orderIdCol)];
+  if (idx === undefined) {
+    throw new Error(`Column '${orderIdCol}' not found in the dump - cannot filter by channel.`);
+  }
+  return dataRows.filter((row) => detectChannel(row[idx]) === channelName);
+}
+
+// ---- NEW (additive): filter by multiple channels at once, for the
+// multi-select marketplace dropdown. Does not alter filterRowsByChannel above. --
+function filterRowsByChannels(headerIndex, dataRows, channelNames, orderIdCol = "Display Order Code") {
+  const idx = headerIndex[norm(orderIdCol)];
+  if (idx === undefined) {
+    throw new Error(`Column '${orderIdCol}' not found in the dump - cannot filter by channel.`);
+  }
+  const wanted = new Set(channelNames);
+  return dataRows.filter((row) => wanted.has(detectChannel(row[idx])));
+}
+
+// ---- Generic helpers --------------------------------------------------------
+function norm(s) {
+  return String(s == null ? "" : s).trim().toLowerCase();
+}
+
+function coerceValue(raw) {
+  if (raw === null || raw === undefined) return null;
+  const s = String(raw).trim();
+  if (s === "") return null;
+  if (s instanceof Date) return s;
+  const f = Number(s);
+  if (!Number.isNaN(f) && s.match(/^-?\d+(\.\d+)?$/)) {
+    return s.includes(".") ? f : Math.trunc(f);
+  }
+  return s;
+}
+
+// ---- CSV parsing (handles quoted fields, embedded commas/newlines) --------
+function parseCSV(text) {
+  // Strip BOM
+  if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
+  const rows = [];
+  let row = [];
+  let field = "";
+  let inQuotes = false;
+  let i = 0;
+  const n = text.length;
+  while (i < n) {
+    const ch = text[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (text[i + 1] === '"') {
+          field += '"';
+          i += 2;
+          continue;
+        }
+        inQuotes = false;
+        i++;
+        continue;
+      }
+      field += ch;
+      i++;
+      continue;
+    }
+    if (ch === '"') {
+      inQuotes = true;
+      i++;
+      continue;
+    }
+    if (ch === ",") {
+      row.push(field);
+      field = "";
+      i++;
+      continue;
+    }
+    if (ch === "\r") {
+      i++;
+      continue;
+    }
+    if (ch === "\n") {
+      row.push(field);
+      rows.push(row);
+      row = [];
+      field = "";
+      i++;
+      continue;
+    }
+    field += ch;
+    i++;
+  }
+  if (field !== "" || row.length > 0) {
+    row.push(field);
+    rows.push(row);
+  }
+  return rows;
+}
+
+function buildHeaderIndex(headers) {
+  const idx = {};
+  headers.forEach((h, i) => {
+    if (h === null || h === undefined) return;
+    const key = norm(h);
+    if (key && !(key in idx)) idx[key] = i;
+  });
+  return idx;
+}
+
+function readDumpFromRows(rawRows) {
+  if (!rawRows.length) throw new Error("The file appears to be empty.");
+  const headers = rawRows[0];
+  const headerIndex = buildHeaderIndex(headers);
+  const dataRows = [];
+  for (let r = 1; r < rawRows.length; r++) {
+    const row = rawRows[r];
+    if (row.some((v) => v !== null && v !== undefined && String(v).trim() !== "")) {
+      dataRows.push(row.map(coerceValue));
+    }
+  }
+  return { headerIndex, dataRows };
+}
+
+function readDumpCSV(text) {
+  const rawRows = parseCSV(text);
+  return readDumpFromRows(rawRows);
+}
+
+// ---- Date formatting (dd-mm-yyyy hh:mm:ss) ---------------------------------
+const DATE_FIELDS = new Set(["ORDER_DATE", "DISPATCH_DATE"]);
+
+function pad2(n) {
+  return String(n).padStart(2, "0");
+}
+
+function formatDateFromExcelSerial(serial) {
+  // Excel date serial (days since 1899-12-30), may include fractional day = time
+  const epoch = Date.UTC(1899, 11, 30);
+  const ms = epoch + serial * 86400000;
+  const d = new Date(ms);
+  return `${pad2(d.getUTCDate())}-${pad2(d.getUTCMonth() + 1)}-${d.getUTCFullYear()} ${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}:${pad2(d.getUTCSeconds())}`;
+}
+
+function formatDateValue(value) {
+  if (value === null || value === undefined) return null;
+  if (value instanceof Date) {
+    return `${pad2(value.getDate())}-${pad2(value.getMonth() + 1)}-${value.getFullYear()} ${pad2(value.getHours())}:${pad2(value.getMinutes())}:${pad2(value.getSeconds())}`;
+  }
+  if (typeof value === "number") {
+    // Excel serial date number
+    return formatDateFromExcelSerial(value);
+  }
+  const s = String(value).trim();
+  if (!s) return null;
+  // Try dd-mm-yyyy or dd/mm/yyyy, with optional hh:mm[:ss]
+  const m = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+  if (m) {
+    const [, dd, mm, yyyy, hh = "0", mi = "0", ss = "0"] = m;
+    return `${pad2(dd)}-${pad2(mm)}-${yyyy} ${pad2(hh)}:${pad2(mi)}:${pad2(ss)}`;
+  }
+  const m2 = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+  if (m2) {
+    const [, yyyy, mm, dd, hh = "0", mi = "0", ss = "0"] = m2;
+    return `${pad2(dd)}-${pad2(mm)}-${yyyy} ${pad2(hh)}:${pad2(mi)}:${pad2(ss)}`;
+  }
+  return s; // unrecognized format - leave as-is rather than lose data
+}
+
+function applyValueOverride(sapHeader, value) {
+  const overrides = VALUE_OVERRIDES[sapHeader];
+  if (!overrides || value === null || value === undefined) return value;
+  const key = String(value).trim().toUpperCase();
+  return key in overrides ? overrides[key] : value;
+}
+
+function formatOutputValue(sapHeader, value) {
+  if (DATE_FIELDS.has(sapHeader)) return formatDateValue(value);
+  value = applyValueOverride(sapHeader, value);
+  if (value instanceof Date) return formatDateValue(value);
+  return value;
+}
+
+// ---- Sales output ------------------------------------------------------------
+function buildOutputRows(headerIndex, dataRows) {
+  const warnings = [];
+  const seenMissing = new Set();
+  const outputRows = [];
+  for (const row of dataRows) {
+    const outRow = [];
+    for (const [sapHeader, ucHeader] of MAPPING_DATA) {
+      if (ucHeader === null) {
+        outRow.push(null);
+        continue;
+      }
+      const key = norm(ucHeader);
+      const idx = headerIndex[key];
+      if (idx === undefined) {
+        if (!seenMissing.has(key)) {
+          warnings.push(
+            `Column not found in dump for SAP field '${sapHeader}' (expected Unicommerce header: '${ucHeader}') - left blank for all rows.`
+          );
+          seenMissing.add(key);
+        }
+        outRow.push(null);
+      } else {
+        const val = idx < row.length ? row[idx] : null;
+        outRow.push(formatOutputValue(sapHeader, val));
+      }
+    }
+    outputRows.push(outRow);
+  }
+  return { outputRows, warnings };
+}
+
+function sapHeaders() {
+  return MAPPING_DATA.map(([sap]) => sap);
+}
+
+function toNumber(v) {
+  if (v === null || v === undefined) return 0;
+  if (typeof v === "number") return v;
+  const f = parseFloat(String(v).replace(/,/g, ""));
+  return Number.isNaN(f) ? 0 : f;
+}
+
+const DASHBOARD_INPUT_VALUE_COLUMN = "Total Price";
+const DASHBOARD_OUTPUT_VALUE_FIELD = "ORD_TOT";
+
+function sumInputValue(headerIndex, rows, colName = DASHBOARD_INPUT_VALUE_COLUMN) {
+  const idx = headerIndex[norm(colName)];
+  if (idx === undefined) return null;
+  return rows.reduce((acc, row) => acc + toNumber(idx < row.length ? row[idx] : null), 0);
+}
+
+function sumOutputValue(outputRows, sapField = DASHBOARD_OUTPUT_VALUE_FIELD) {
+  const idx = sapHeaders().indexOf(sapField);
+  if (idx === -1) return null;
+  return outputRows.reduce((acc, row) => acc + toNumber(row[idx]), 0);
+}
+
+// ---- Sales history (Order||SKU -> Shipping Package Code) ------------------
+const SALES_HISTORY_ORDER_COL = "Display Order Code";
+const SALES_HISTORY_SKU_COL = "Item SKU Code";
+const SALES_HISTORY_RP_COL = "Shipping Package Code";
+
+function historyKey(order, sku) {
+  return `${String(order).trim()}||${String(sku).trim()}`;
+}
+
+function buildHistoryUpdates(headerIndex, dataRows) {
+  const orderIdx = headerIndex[norm(SALES_HISTORY_ORDER_COL)];
+  const skuIdx = headerIndex[norm(SALES_HISTORY_SKU_COL)];
+  const rpIdx = headerIndex[norm(SALES_HISTORY_RP_COL)];
+  if (orderIdx === undefined || skuIdx === undefined || rpIdx === undefined) return {};
+  const updates = {};
+  for (const row of dataRows) {
+    const order = orderIdx < row.length ? row[orderIdx] : null;
+    const sku = skuIdx < row.length ? row[skuIdx] : null;
+    const rp = rpIdx < row.length ? row[rpIdx] : null;
+    if (!order || !sku || !rp || !String(rp).trim()) continue;
+    updates[historyKey(order, sku)] = String(rp).trim();
+  }
+  return updates;
+}
+
+// ---- Return template mapping -----------------------------------------------
+const RETURN_DIRECT_MAPPING = [
+  ["Date", "Date"],
+  ["Sale Order Number", "Sale Order Number"],
+  ["Product SKU Code", "Product SKU Code"],
+  ["Qty", "Qty"],
+  ["Currency", "Currency"],
+  ["Other charges", "Other charges"],
+  ["Other charges Ledger", "Other charges Ledger"],
+  ["Other charges1", "Other charges1"],
+  ["Other charges Ledger1", "Other charges Ledger1"],
+  ["Discount Amount", "Discount Amount"],
+];
+const RETURN_TOTAL_SOURCE_COL = "Total";
+const RETURN_QTY_COL = "Qty";
+
+const RETURN_OUTPUT_COLUMNS = [
+  "Date", "Sale Order Number", "Product SKU Code", "Qty", "Total", "Currency",
+  "Unit Price", "Other charges", "Other charges Ledger", "Other charges1",
+  "Other charges Ledger1", "Discount Amount", "RP Code",
+  "Raw Total (from UC Return Dump)",
+];
+
+function buildReturnOutputRows(headerIndex, dataRows, salesHistory) {
+  const warnings = [];
+  const seenMissing = new Set();
+  let missingRpCount = 0;
+  const outputRows = [];
+
+  function get(row, colName) {
+    const idx = headerIndex[norm(colName)];
+    if (idx === undefined) {
+      if (!seenMissing.has(colName)) {
+        warnings.push(`Column '${colName}' not found in the Return dump - left blank for all rows.`);
+        seenMissing.add(colName);
+      }
+      return null;
+    }
+    return idx < row.length ? row[idx] : null;
+  }
+
+  for (const row of dataRows) {
+    const out = {};
+    for (const [templateCol, dumpCol] of RETURN_DIRECT_MAPPING) {
+      out[templateCol] = get(row, dumpCol);
+    }
+    const rawTotal = toNumber(get(row, RETURN_TOTAL_SOURCE_COL));
+    const qty = toNumber(get(row, RETURN_QTY_COL));
+    const other1 = toNumber(out["Other charges"]);
+    const other2 = toNumber(out["Other charges1"]);
+
+    out["Total"] = Math.round((rawTotal - (other1 + other2)) * 100) / 100;
+    out["Unit Price"] = qty ? Math.round((rawTotal / qty) * 100) / 100 : null;
+    out["Raw Total (from UC Return Dump)"] = rawTotal;
+
+    const orderVal = out["Sale Order Number"];
+    const skuVal = out["Product SKU Code"];
+    const rpCode = salesHistory[historyKey(orderVal, skuVal)];
+    if (rpCode === undefined) {
+      missingRpCount++;
+      out["RP Code"] = null;
+    } else {
+      out["RP Code"] = rpCode;
+    }
+
+    outputRows.push(RETURN_OUTPUT_COLUMNS.map((c) => (out[c] === undefined ? null : out[c])));
+  }
+
+  if (missingRpCount) {
+    warnings.push(
+      `RP Code could not be found in Sales history for ${missingRpCount} row(s) - left blank. ` +
+      `This happens if the matching Sales file was never processed in this browser.`
+    );
+  }
+  return { outputRows, warnings };
+}
+
+// ============================================================================
+// UI wiring - depends on core_logic.js being loaded first
+// ============================================================================
+
+const LS_THEME = "uc_sap_theme";
+const LS_SOUND = "uc_sap_sound_on";
+const LS_HISTORY = "uc_sap_sales_history";
+
+// ---- Storage helpers --------------------------------------------------------
+function loadHistory() {
+  try {
+    const raw = localStorage.getItem(LS_HISTORY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    return {};
+  }
+}
+function saveHistory(history) {
+  try {
+    localStorage.setItem(LS_HISTORY, JSON.stringify(history));
+  } catch (e) {
+    console.error("Could not save Sales history:", e);
+  }
+}
+function mergeHistory(updates) {
+  const history = loadHistory();
+  let changed = 0;
+  for (const [key, val] of Object.entries(updates)) {
+    if (history[key] !== val) {
+      history[key] = val;
+      changed++;
+    }
+  }
+  if (changed) saveHistory(history);
+  return changed;
+}
+
+// ---- Sound (Web Audio API - no external files needed) ---------------------
+// Subtle, short click/feedback sounds. Lazily created on first user gesture
+// to respect browser autoplay restrictions. Toggle persists during the session
+// (and across sessions via localStorage, same as before).
+let audioCtx = null;
+let audioUnlocked = false;
+function ensureAudio() {
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; }
+  }
+  if (audioCtx && audioCtx.state === "suspended") {
+    audioCtx.resume().catch(() => {});
+  }
+  return audioCtx;
+}
+document.addEventListener("click", function unlockOnce() {
+  audioUnlocked = true;
+  ensureAudio();
+  document.removeEventListener("click", unlockOnce);
+}, { once: true });
+
+function soundEnabled() {
+  const t = document.getElementById("soundToggle");
+  return t ? t.checked : true;
+}
+
+function beep(freq, durationMs, type) {
+  if (!soundEnabled()) return;
+  try {
+    const ctx = ensureAudio();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.frequency.value = freq;
+    osc.type = type || "sine";
+    gain.gain.setValueAtTime(0.07, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + durationMs / 1000);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + durationMs / 1000);
+  } catch (e) { /* ignore - some browsers block audio until user interaction */ }
+}
+
+// Debounce identical rapid-fire sounds (e.g. during animation loops) so the
+// app never becomes noisy/annoying even if a caller fires the same event twice.
+let lastSoundAt = {};
+function playSound(event) {
+  const now = Date.now();
+  if (lastSoundAt[event] && now - lastSoundAt[event] < 70) return;
+  lastSoundAt[event] = now;
+  if (event === "start") beep(660, 90);
+  else if (event === "step") beep(880, 55);
+  else if (event === "success") beep(1046, 170);
+  else if (event === "error") beep(220, 220, "square");
+  else if (event === "click") beep(520, 35);
+  else if (event === "open") beep(720, 45);
+  else if (event === "close") beep(480, 45);
+  else if (event === "check") beep(920, 40);
+  else if (event === "uncheck") beep(400, 40);
+  else if (event === "theme") beep(760, 80);
+  else if (event === "upload") beep(600, 70);
+}
+
+// ---- Theme ------------------------------------------------------------------
+function applyTheme(name, opts = {}) {
+  document.documentElement.classList.add("theme-transition");
+  document.documentElement.setAttribute("data-theme", name === "navy" ? "" : name);
+  document.getElementById("themeSelect").value = name;
+  localStorage.setItem(LS_THEME, name);
+  if (!opts.silent) playSound("theme");
+  window.clearTimeout(applyTheme._t);
+  applyTheme._t = window.setTimeout(() => document.documentElement.classList.remove("theme-transition"), 400);
+}
+document.getElementById("themeSelect").addEventListener("change", (e) => applyTheme(e.target.value));
+applyTheme(localStorage.getItem(LS_THEME) || "navy", { silent: true });
+
+// ---- Sound toggle persistence (Settings tab checkbox is the source of truth,
+// the header quick toggle mirrors and controls the same state) ----
+const soundToggleEl = document.getElementById("soundToggle");
+const soundQuickToggleEl = document.getElementById("soundQuickToggle");
+const soundQuickLabelEl = document.getElementById("soundQuickLabel");
+
+soundToggleEl.checked = localStorage.getItem(LS_SOUND) !== "false";
+
+function syncSoundUI() {
+  soundQuickToggleEl.classList.toggle("on", soundToggleEl.checked);
+  soundQuickLabelEl.textContent = soundToggleEl.checked ? "Sound On" : "Sound Off";
+}
+syncSoundUI();
+
+soundToggleEl.addEventListener("change", () => {
+  localStorage.setItem(LS_SOUND, soundToggleEl.checked ? "true" : "false");
+  syncSoundUI();
+  if (soundToggleEl.checked) beep(700, 50);
+});
+soundQuickToggleEl.addEventListener("click", () => {
+  soundToggleEl.checked = !soundToggleEl.checked;
+  soundToggleEl.dispatchEvent(new Event("change"));
+});
+
+// ---- Tabs ---------------------------------------------------------------------
+document.querySelectorAll(".tab-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    playSound("click");
+    document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
+    btn.classList.add("active");
+    document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+    if (btn.dataset.tab === "dashboard") refreshDashboard();
+  });
+});
+
+// ---- Dashboard state ------------------------------------------------------
+const dash = {
+  inputQty: null, outputQty: null, inputValue: null, outputValue: null,
+  lastSalesRun: null, lastReturnRun: null,
+};
+
+function refreshDashboard() {
+  document.getElementById("dashInputQty").textContent = dash.inputQty ?? "-";
+  document.getElementById("dashOutputQty").textContent = dash.outputQty ?? "-";
+  document.getElementById("dashInputValue").textContent = dash.inputValue != null ? dash.inputValue.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "-";
+  document.getElementById("dashOutputValue").textContent = dash.outputValue != null ? dash.outputValue.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "-";
+  document.getElementById("dashLastSales").textContent = dash.lastSalesRun ? dash.lastSalesRun.toLocaleTimeString() : "-";
+  document.getElementById("dashLastReturn").textContent = dash.lastReturnRun ? dash.lastReturnRun.toLocaleTimeString() : "-";
+  document.getElementById("dashHistoryCount").textContent = Object.keys(loadHistory()).length;
+  document.getElementById("historyStatus").textContent = `${Object.keys(loadHistory()).length} order/SKU entries stored in this browser.`;
+}
+
+function updateMatchIndicator(inputQty, outputQty, inputValue, outputValue, opts = {}) {
+  const el = document.getElementById("dashMatchIndicator");
+  const qtyMatch = inputQty === outputQty || opts.qtyFiltered;
+
+  if (opts.qtyFiltered) {
+    el.textContent = `Filter applied: ${outputQty} of ${inputQty} input rows kept.`;
+    el.className = "match-indicator neutral";
+    return;
+  }
+  if (opts.mode === "RETURN") {
+    if (qtyMatch) {
+      const diff = inputValue != null && outputValue != null ? inputValue - outputValue : null;
+      let msg = "Qty matches the input dump";
+      if (diff != null) msg += ` (value differs by ${diff.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} - expected, due to other charges deducted)`;
+      el.textContent = msg;
+      el.className = "match-indicator ok";
+    } else {
+      el.textContent = "Qty mismatch - check warnings in the log";
+      el.className = "match-indicator warn";
+    }
+    return;
+  }
+  const valueMatch = inputValue == null || outputValue == null || Math.abs(inputValue - outputValue) < 0.01;
+  if (qtyMatch && valueMatch) {
+    el.textContent = "Qty and value match the input dump";
+    el.className = "match-indicator ok";
+  } else {
+    el.textContent = "Mismatch - check warnings in the log";
+    el.className = "match-indicator warn";
+  }
+}
+
+// ---- File reading (CSV or Excel via SheetJS) -------------------------------
+function readFileAsArrayBuffer(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(file);
+  });
+}
+function readFileAsText(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsText(file);
+  });
+}
+
+async function loadDumpFile(file, sheetName) {
+  const isCSV = file.name.toLowerCase().endsWith(".csv");
+  if (isCSV) {
+    const text = await readFileAsText(file);
+    return readDumpCSV(text);
+  }
+  const buf = await readFileAsArrayBuffer(file);
+  const wb = XLSX.read(buf, { type: "array", cellDates: true });
+  const name = sheetName || wb.SheetNames[0];
+  const ws = wb.Sheets[name];
+  const rawRows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: null });
+  return readDumpFromRows(rawRows);
+}
+
+function listExcelSheets(file) {
+  return readFileAsArrayBuffer(file).then((buf) => {
+    const wb = XLSX.read(buf, { type: "array", cellDates: true });
+    return wb.SheetNames;
+  });
+}
+
+function guessBestSheet(file, wantedHeaders) {
+  return readFileAsArrayBuffer(file).then((buf) => {
+    const wb = XLSX.read(buf, { type: "array", cellDates: true });
+    let best = wb.SheetNames[0];
+    let bestScore = -1;
+    for (const name of wb.SheetNames) {
+      const ws = wb.Sheets[name];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: null, range: 0 });
+      if (!rows.length) continue;
+      const headerSet = new Set(rows[0].filter((h) => h != null).map((h) => norm(h)));
+      let score = 0;
+      for (const w of wantedHeaders) if (headerSet.has(w)) score++;
+      if (score > bestScore) { bestScore = score; best = name; }
+    }
+    return best;
+  });
+}
+
+// ---- Download helper (writes xlsx via SheetJS, triggers browser download) -
+function downloadXLSX(filename, headers, rows) {
+  const aoa = [headers, ...rows.map((r) => r.map((v) => (v === null || v === undefined ? "" : v)))];
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+  XLSX.writeFile(wb, filename);
+}
+
+// ---- Preview table rendering -----------------------------------------------
+function renderPreviewTable(tableEl, headers, rows, limit = 100) {
+  tableEl.innerHTML = "";
+  if (!rows.length) {
+    const empty = document.createElement("div");
+    empty.className = "preview-empty";
+    empty.textContent = "No rows to preview yet.";
+    tableEl.parentElement.appendChild(empty);
+    return;
+  }
+  const prevEmpty = tableEl.parentElement.querySelector(".preview-empty");
+  if (prevEmpty) prevEmpty.remove();
+  const thead = document.createElement("thead");
+  const trh = document.createElement("tr");
+  headers.forEach((h) => {
+    const th = document.createElement("th");
+    th.textContent = h;
+    trh.appendChild(th);
+  });
+  thead.appendChild(trh);
+  tableEl.appendChild(thead);
+  const tbody = document.createElement("tbody");
+  rows.slice(0, limit).forEach((row) => {
+    const tr = document.createElement("tr");
+    row.forEach((v) => {
+      const td = document.createElement("td");
+      td.textContent = v === null || v === undefined ? "" : v;
+      tr.appendChild(td);
+    });
+    tbody.appendChild(tr);
+  });
+  tableEl.appendChild(tbody);
+}
+
+// ---- Generic drop zone wiring -----------------------------------------------
+function wireDropZone(zoneEl, browseBtn, fileInput, hintEl, onFile) {
+  browseBtn.addEventListener("click", (e) => { playSound("click"); fileInput.click(); });
+  fileInput.addEventListener("change", () => {
+    if (fileInput.files.length) { playSound("upload"); onFile(fileInput.files[0]); }
+  });
+  zoneEl.addEventListener("click", (e) => {
+    if (e.target === browseBtn) return;
+    fileInput.click();
+  });
+  ["dragenter", "dragover"].forEach((evt) =>
+    zoneEl.addEventListener(evt, (e) => { e.preventDefault(); zoneEl.classList.add("dragover"); })
+  );
+  ["dragleave", "drop"].forEach((evt) =>
+    zoneEl.addEventListener(evt, (e) => { e.preventDefault(); zoneEl.classList.remove("dragover"); })
+  );
+  zoneEl.addEventListener("drop", (e) => {
+    const files = e.dataTransfer.files;
+    if (files.length > 1) alert("Please drop only one file at a time. Using the first one.");
+    if (files.length) { playSound("upload"); onFile(files[0]); }
+  });
+  function setFileName(name) {
+    hintEl.textContent = name;
+    hintEl.classList.add("has-file");
+  }
+  return { setFileName };
+}
+
+function logMsg(logEl, msg) {
+  logEl.textContent += msg + "\n";
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+// ---- Creative progress bar / step tracker -----------------------------------
+const PROGRESS_STEPS = ["Uploading", "Validating", "Mapping", "Processing", "Reconciling", "Finalizing", "Complete"];
+
+function stepIndexForPercent(pct) {
+  if (pct >= 100) return 6;
+  if (pct >= 95) return 5;
+  if (pct >= 85) return 4;
+  if (pct >= 50) return 3;
+  if (pct >= 30) return 2;
+  if (pct >= 15) return 1;
+  return 0;
+}
+
+// This remains connected to the app's real processing progress: every call site
+// below corresponds to an actual synchronous stage of file reading / mapping /
+// building rows / history reconciliation that has just completed - percentages
+// are not simulated independently of real work.
+function setProgress(wrapEl, fillEl, statusEl, stepsEl, pct, label) {
+  fillEl.style.width = pct + "%";
+  statusEl.textContent = label || pct + "%";
+  statusEl.classList.toggle("complete", pct >= 100);
+  statusEl.classList.remove("errored");
+  const idx = stepIndexForPercent(pct);
+  if (stepsEl) {
+    Array.from(stepsEl.children).forEach((el, i) => {
+      el.classList.toggle("active", i === idx && pct < 100);
+      el.classList.toggle("done", i < idx || pct >= 100);
+    });
+  }
+  if (pct >= 100) {
+    wrapEl.classList.add("progress-complete");
+  } else {
+    wrapEl.classList.remove("progress-complete");
+  }
+}
+
+function resetProgress(wrapEl, fillEl, statusEl, stepsEl) {
+  wrapEl.classList.remove("progress-complete");
+  fillEl.style.width = "0%";
+  statusEl.textContent = "Ready";
+  statusEl.classList.remove("complete", "errored");
+  if (stepsEl) {
+    Array.from(stepsEl.children).forEach((el) => { el.classList.remove("active", "done"); });
+  }
+}
+
+function setProgressError(statusEl) {
+  statusEl.textContent = "Error";
+  statusEl.classList.remove("complete");
+  statusEl.classList.add("errored");
+}
+
+// Yields control back to the browser so the progress bar/log actually repaint
+// during a long synchronous loop, instead of freezing until it's all done.
+function yieldToUI() {
+  return new Promise((resolve) => setTimeout(resolve, 0));
+}
+
+// ============================================================================
+// MARKETPLACE MULTI-SELECT (Sales tab) — selections feed straight into the
+// real filtering logic (filterRowsByChannels) used by the Sales generator.
+// ============================================================================
+const MARKETPLACES = ["Amazon", "Flipkart", "JioMart", "Kesh-King", "Zandu Care", "Kiosk", "Dpanda"];
+const selectedMarketplaces = new Set(); // empty set == "All marketplaces" (no filter), same as legacy "All" option
+
+function marketplaceToggleLabel() {
+  if (selectedMarketplaces.size === 0 || selectedMarketplaces.size === MARKETPLACES.length) return "All marketplaces";
+  return Array.from(selectedMarketplaces).join(" \u2022 ");
+}
+
+function renderMarketplaceUI() {
+  const toggleText = document.getElementById("marketplaceToggleText");
+  const chipsEl = document.getElementById("marketplaceChips");
+  const optionsEl = document.getElementById("marketplaceOptions");
+
+  toggleText.textContent = marketplaceToggleLabel();
+
+  chipsEl.innerHTML = "";
+  selectedMarketplaces.forEach((name) => {
+    const chip = document.createElement("span");
+    chip.className = "ms-chip";
+    const label = document.createElement("span");
+    label.textContent = name;
+    const removeBtn = document.createElement("button");
+    removeBtn.type = "button";
+    removeBtn.textContent = "\u00d7";
+    removeBtn.setAttribute("aria-label", "Remove " + name);
+    removeBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      selectedMarketplaces.delete(name);
+      playSound("uncheck");
+      renderMarketplaceUI();
+    });
+    chip.appendChild(label);
+    chip.appendChild(removeBtn);
+    chipsEl.appendChild(chip);
+  });
+
+  optionsEl.innerHTML = "";
+  MARKETPLACES.forEach((name) => {
+    const checked = selectedMarketplaces.has(name);
+    const opt = document.createElement("div");
+    opt.className = "ms-option" + (checked ? " checked" : "");
+    opt.setAttribute("role", "option");
+    opt.setAttribute("aria-selected", String(checked));
+
+    const cb = document.createElement("input");
+    cb.type = "checkbox";
+    cb.checked = checked;
+
+    const dot = document.createElement("span");
+    dot.className = "dot";
+
+    const label = document.createElement("span");
+    label.textContent = name;
+    label.style.flex = "1";
+
+    opt.appendChild(cb);
+    opt.appendChild(label);
+    opt.appendChild(dot);
+
+    opt.addEventListener("click", () => {
+      if (selectedMarketplaces.has(name)) {
+        selectedMarketplaces.delete(name);
+        playSound("uncheck");
+      } else {
+        selectedMarketplaces.add(name);
+        playSound("check");
+      }
+      renderMarketplaceUI();
+    });
+
+    optionsEl.appendChild(opt);
+  });
+}
+
+function getSelectedMarketplaces() {
+  return Array.from(selectedMarketplaces);
+}
+
+function resetMarketplaceSelection() {
+  selectedMarketplaces.clear();
+  renderMarketplaceUI();
+}
+
+(function marketplaceDropdownInit() {
+  const dropdown = document.getElementById("marketplaceDropdown");
+  const toggle = document.getElementById("marketplaceToggle");
+
+  function openPanel() {
+    dropdown.classList.add("open");
+    toggle.setAttribute("aria-expanded", "true");
+    playSound("open");
+  }
+  function closePanel() {
+    if (!dropdown.classList.contains("open")) return;
+    dropdown.classList.remove("open");
+    toggle.setAttribute("aria-expanded", "false");
+    playSound("close");
+  }
+
+  toggle.addEventListener("click", (e) => {
+    e.stopPropagation();
+    dropdown.classList.contains("open") ? closePanel() : openPanel();
+  });
+
+  document.getElementById("marketplaceSelectAll").addEventListener("click", (e) => {
+    e.stopPropagation();
+    MARKETPLACES.forEach((m) => selectedMarketplaces.add(m));
+    playSound("check");
+    renderMarketplaceUI();
+  });
+  document.getElementById("marketplaceClearAll").addEventListener("click", (e) => {
+    e.stopPropagation();
+    selectedMarketplaces.clear();
+    playSound("uncheck");
+    renderMarketplaceUI();
+  });
+
+  document.getElementById("marketplacePanel").addEventListener("click", (e) => e.stopPropagation());
+
+  document.addEventListener("click", (e) => {
+    if (!dropdown.contains(e.target)) closePanel();
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") closePanel();
+  });
+
+  renderMarketplaceUI();
+})();
+
+// ============================================================================
+// SALES TAB
+// ============================================================================
+(function salesTabInit() {
+  const dropzone = document.getElementById("salesDropzone");
+  const browseBtn = document.getElementById("salesBrowseBtn");
+  const fileInput = document.getElementById("salesFileInput");
+  const hint = document.getElementById("salesHint");
+  const sheetRow = document.getElementById("salesSheetRow");
+  const sheetSelect = document.getElementById("salesSheetSelect");
+  const generateBtn = document.getElementById("salesGenerateBtn");
+  const downloadBtn = document.getElementById("salesDownloadBtn");
+  const clearBtn = document.getElementById("salesClearBtn");
+  const progressWrap = document.getElementById("salesProgressWrap");
+  const progressFill = document.getElementById("salesProgressFill");
+  const statusEl = document.getElementById("salesStatus");
+  const stepsEl = document.getElementById("salesSteps");
+  const logEl = document.getElementById("salesLog");
+  const previewTable = document.getElementById("salesPreviewTable");
+
+  let currentFile = null;
+  let lastResult = null; // { outputRows, headers }
+
+  const zone = wireDropZone(dropzone, browseBtn, fileInput, hint, onFileSelected);
+
+  async function onFileSelected(file) {
+    currentFile = file;
+    zone.setFileName(file.name);
+    if (file.name.toLowerCase().endsWith(".csv")) {
+      sheetRow.style.display = "none";
+      sheetSelect.innerHTML = "";
+      return;
+    }
+    try {
+      const sheets = await listExcelSheets(file);
+      const wanted = MAPPING_DATA.filter(([, uc]) => uc).map(([, uc]) => norm(uc));
+      const best = sheets.length ? await guessBestSheet(file, wanted) : "";
+      sheetSelect.innerHTML = "";
+      sheets.forEach((s) => {
+        const opt = document.createElement("option");
+        opt.value = s; opt.textContent = s;
+        sheetSelect.appendChild(opt);
+      });
+      sheetSelect.value = best;
+      sheetRow.style.display = sheets.length > 1 ? "flex" : "none";
+    } catch (e) {
+      alert("Error reading file: " + e.message);
+    }
+  }
+
+  clearBtn.addEventListener("click", () => {
+    playSound("click");
+    currentFile = null;
+    hint.textContent = "Drag & drop a file here, or click to browse";
+    hint.classList.remove("has-file");
+    sheetRow.style.display = "none";
+    resetProgress(progressWrap, progressFill, statusEl, stepsEl);
+    logEl.textContent = "";
+    previewTable.innerHTML = "";
+    const prevEmpty = previewTable.parentElement.querySelector(".preview-empty");
+    if (prevEmpty) prevEmpty.remove();
+    downloadBtn.disabled = true;
+    lastResult = null;
+    resetMarketplaceSelection();
+  });
+
+  generateBtn.addEventListener("click", async () => {
+    if (!currentFile) { alert("Please select a Unicommerce dump file first."); return; }
+    const isExcel = !currentFile.name.toLowerCase().endsWith(".csv");
+    const sheetName = sheetSelect.value;
+    if (isExcel && sheetRow.style.display !== "none" && !sheetName) {
+      alert("Please select which sheet contains the order data."); return;
+    }
+
+    logEl.textContent = "";
+    resetProgress(progressWrap, progressFill, statusEl, stepsEl);
+    generateBtn.disabled = true;
+    playSound("start");
+
+    try {
+      statusEl.textContent = "Preparing files...";
+      logMsg(logEl, `Using built-in mapping (${MAPPING_DATA.length} SAP columns).`);
+      logMsg(logEl, `Reading dump file: ${currentFile.name}` + (isExcel ? ` (sheet '${sheetName}')` : " (CSV)"));
+      await yieldToUI();
+
+      const { headerIndex, dataRows: allRows } = await loadDumpFile(currentFile, isExcel ? sheetName : null);
+      logMsg(logEl, `Found ${allRows.length} data rows in the dump.`);
+      setProgress(progressWrap, progressFill, statusEl, stepsEl, 20, "Validating columns...");
+      playSound("step");
+      await yieldToUI();
+
+      const inputQty = allRows.length;
+      const inputValue = sumInputValue(headerIndex, allRows);
+
+      let dataRows = allRows;
+      let filtered = false;
+      const selectedMarkets = getSelectedMarketplaces();
+      const isAllMarkets = selectedMarkets.length === 0 || selectedMarkets.length === MARKETPLACES.length;
+      if (!isAllMarkets) {
+        const before = dataRows.length;
+        statusEl.textContent = "Mapping marketplace SKUs...";
+        dataRows = filterRowsByChannels(headerIndex, dataRows, selectedMarkets);
+        logMsg(logEl, `Marketplace filter (${selectedMarkets.join(", ")}): kept ${dataRows.length} of ${before} rows.`);
+        filtered = true;
+      }
+      setProgress(progressWrap, progressFill, statusEl, stepsEl, 35, "Mapping marketplace SKUs...");
+      await yieldToUI();
+
+      statusEl.textContent = "Processing records...";
+      logMsg(logEl, "Matching columns and building output...");
+      await yieldToUI();
+
+      const { outputRows, warnings } = buildOutputRows(headerIndex, dataRows);
+      setProgress(progressWrap, progressFill, statusEl, stepsEl, 80, "Processing records...");
+      playSound("step");
+      await yieldToUI();
+
+      statusEl.textContent = "Reconciling data...";
+      const updates = buildHistoryUpdates(headerIndex, dataRows);
+      const changed = mergeHistory(updates);
+      if (changed) logMsg(logEl, `Sales history updated (${changed} order/SKU entries) for future Return lookups.`);
+      setProgress(progressWrap, progressFill, statusEl, stepsEl, 92, "Reconciling data...");
+      await yieldToUI();
+
+      warnings.forEach((w) => logMsg(logEl, "Warning: " + w));
+      logMsg(logEl, `\nCompleted. ${outputRows.length} rows generated.`);
+
+      statusEl.textContent = "Generating report...";
+      const outputValue = sumOutputValue(outputRows);
+      dash.inputQty = inputQty; dash.outputQty = outputRows.length;
+      dash.inputValue = inputValue; dash.outputValue = outputValue;
+      dash.lastSalesRun = new Date();
+      updateMatchIndicator(inputQty, outputRows.length, inputValue, outputValue, { qtyFiltered: filtered, mode: "SALES" });
+      refreshDashboard();
+      setProgress(progressWrap, progressFill, statusEl, stepsEl, 97, "Finalizing results...");
+      await yieldToUI();
+
+      renderPreviewTable(previewTable, sapHeaders(), outputRows, 100);
+      lastResult = { outputRows, headers: sapHeaders() };
+      downloadBtn.disabled = false;
+      setProgress(progressWrap, progressFill, statusEl, stepsEl, 100, "Complete");
+      playSound("success");
+    } catch (e) {
+      logMsg(logEl, "ERROR: " + e.message);
+      setProgressError(statusEl);
+      playSound("error");
+      alert("Error: " + e.message);
+    } finally {
+      generateBtn.disabled = false;
+    }
+  });
+
+  downloadBtn.addEventListener("click", () => {
+    playSound("click");
+    if (!lastResult) return;
+    const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    downloadXLSX(`SAP_Upload_Sales_${stamp}.xlsx`, lastResult.headers, lastResult.outputRows);
+    logMsg(logEl, "Downloaded SAP upload file.");
+  });
+})();
+
+// ============================================================================
+// RETURN TAB
+// ============================================================================
+(function returnTabInit() {
+  const dropzone = document.getElementById("returnDropzone");
+  const browseBtn = document.getElementById("returnBrowseBtn");
+  const fileInput = document.getElementById("returnFileInput");
+  const hint = document.getElementById("returnHint");
+  const sheetRow = document.getElementById("returnSheetRow");
+  const sheetSelect = document.getElementById("returnSheetSelect");
+  const generateBtn = document.getElementById("returnGenerateBtn");
+  const downloadBtn = document.getElementById("returnDownloadBtn");
+  const clearBtn = document.getElementById("returnClearBtn");
+  const progressWrap = document.getElementById("returnProgressWrap");
+  const progressFill = document.getElementById("returnProgressFill");
+  const statusEl = document.getElementById("returnStatus");
+  const stepsEl = document.getElementById("returnSteps");
+  const logEl = document.getElementById("returnLog");
+  const previewTable = document.getElementById("returnPreviewTable");
+
+  let currentFile = null;
+  let lastResult = null;
+
+  const zone = wireDropZone(dropzone, browseBtn, fileInput, hint, onFileSelected);
+
+  async function onFileSelected(file) {
+    currentFile = file;
+    zone.setFileName(file.name);
+    if (file.name.toLowerCase().endsWith(".csv")) {
+      sheetRow.style.display = "none";
+      sheetSelect.innerHTML = "";
+      return;
+    }
+    try {
+      const sheets = await listExcelSheets(file);
+      sheetSelect.innerHTML = "";
+      sheets.forEach((s) => {
+        const opt = document.createElement("option");
+        opt.value = s; opt.textContent = s;
+        sheetSelect.appendChild(opt);
+      });
+      sheetSelect.value = sheets[0] || "";
+      sheetRow.style.display = sheets.length > 1 ? "flex" : "none";
+    } catch (e) {
+      alert("Error reading file: " + e.message);
+    }
+  }
+
+  clearBtn.addEventListener("click", () => {
+    playSound("click");
+    currentFile = null;
+    hint.textContent = "Drag & drop a file here, or click to browse";
+    hint.classList.remove("has-file");
+    sheetRow.style.display = "none";
+    resetProgress(progressWrap, progressFill, statusEl, stepsEl);
+    logEl.textContent = "";
+    previewTable.innerHTML = "";
+    const prevEmpty = previewTable.parentElement.querySelector(".preview-empty");
+    if (prevEmpty) prevEmpty.remove();
+    downloadBtn.disabled = true;
+    lastResult = null;
+  });
+
+  generateBtn.addEventListener("click", async () => {
+    if (!currentFile) { alert("Please select a Return dump file first."); return; }
+    const isExcel = !currentFile.name.toLowerCase().endsWith(".csv");
+    const sheetName = sheetSelect.value;
+    if (isExcel && sheetRow.style.display !== "none" && !sheetName) {
+      alert("Please select which sheet contains the return data."); return;
+    }
+
+    logEl.textContent = "";
+    resetProgress(progressWrap, progressFill, statusEl, stepsEl);
+    generateBtn.disabled = true;
+    playSound("start");
+
+    try {
+      statusEl.textContent = "Preparing files...";
+      logMsg(logEl, `Reading Return dump file: ${currentFile.name}` + (isExcel ? ` (sheet '${sheetName}')` : " (CSV)"));
+      await yieldToUI();
+
+      const { headerIndex, dataRows } = await loadDumpFile(currentFile, isExcel ? sheetName : null);
+      logMsg(logEl, `Found ${dataRows.length} return rows in the dump.`);
+      setProgress(progressWrap, progressFill, statusEl, stepsEl, 20, "Validating columns...");
+      playSound("step");
+      await yieldToUI();
+
+      const inputQty = dataRows.length;
+      const inputValue = sumInputValue(headerIndex, dataRows, RETURN_TOTAL_SOURCE_COL);
+
+      const history = loadHistory();
+      logMsg(logEl, `Loaded Sales history (${Object.keys(history).length} order/SKU entries known).`);
+      setProgress(progressWrap, progressFill, statusEl, stepsEl, 45, "Processing records...");
+      await yieldToUI();
+
+      statusEl.textContent = "Processing records...";
+      logMsg(logEl, "Calculating Total, Unit Price, and looking up RP Code...");
+      await yieldToUI();
+
+      const { outputRows, warnings } = buildReturnOutputRows(headerIndex, dataRows, history);
+      setProgress(progressWrap, progressFill, statusEl, stepsEl, 88, "Reconciling data...");
+      playSound("step");
+      await yieldToUI();
+
+      warnings.forEach((w) => logMsg(logEl, "Warning: " + w));
+      logMsg(logEl, `\nCompleted. ${outputRows.length} return rows generated.`);
+
+      statusEl.textContent = "Generating report...";
+      const totalIdx = RETURN_OUTPUT_COLUMNS.indexOf("Total");
+      const outputValue = outputRows.reduce((acc, row) => acc + toNumber(row[totalIdx]), 0);
+      dash.inputQty = inputQty; dash.outputQty = outputRows.length;
+      dash.inputValue = inputValue; dash.outputValue = outputValue;
+      dash.lastReturnRun = new Date();
+      updateMatchIndicator(inputQty, outputRows.length, inputValue, outputValue, { mode: "RETURN" });
+      refreshDashboard();
+      setProgress(progressWrap, progressFill, statusEl, stepsEl, 97, "Finalizing results...");
+      await yieldToUI();
+
+      renderPreviewTable(previewTable, RETURN_OUTPUT_COLUMNS, outputRows, 100);
+      lastResult = { outputRows, headers: RETURN_OUTPUT_COLUMNS };
+      downloadBtn.disabled = false;
+      setProgress(progressWrap, progressFill, statusEl, stepsEl, 100, "Complete");
+      playSound("success");
+    } catch (e) {
+      logMsg(logEl, "ERROR: " + e.message);
+      setProgressError(statusEl);
+      playSound("error");
+      alert("Error: " + e.message);
+    } finally {
+      generateBtn.disabled = false;
+    }
+  });
+
+  downloadBtn.addEventListener("click", () => {
+    playSound("click");
+    if (!lastResult) return;
+    const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    downloadXLSX(`SAP_Upload_Return_${stamp}.xlsx`, lastResult.headers, lastResult.outputRows);
+    logMsg(logEl, "Downloaded Return SAP upload file.");
+  });
+})();
+
+// ============================================================================
+// SETTINGS TAB
+// ============================================================================
+(function settingsTabInit() {
+  document.getElementById("exportHistoryBtn").addEventListener("click", () => {
+    playSound("click");
+    const history = loadHistory();
+    const blob = new Blob([JSON.stringify(history, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `uc_sap_sales_history_${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  const importInput = document.getElementById("importHistoryInput");
+  document.getElementById("importHistoryBtn").addEventListener("click", () => { playSound("click"); importInput.click(); });
+  importInput.addEventListener("change", async () => {
+    if (!importInput.files.length) return;
+    try {
+      const text = await readFileAsText(importInput.files[0]);
+      const incoming = JSON.parse(text);
+      const changed = mergeHistory(incoming);
+      alert(`Imported. ${changed} new/updated order-SKU entries merged into this browser's history.`);
+      refreshDashboard();
+      playSound("success");
+    } catch (e) {
+      alert("Could not import that file: " + e.message);
+      playSound("error");
+    }
+    importInput.value = "";
+  });
+
+  document.getElementById("clearHistoryBtn").addEventListener("click", () => {
+    playSound("click");
+    if (confirm("This deletes the saved Order/SKU -> Shipping Package Code lookup used for Return RP Code "
+      + "matching in this browser. Future Returns won't resolve RP Code until Sales files are processed "
+      + "again. Continue?")) {
+      localStorage.removeItem(LS_HISTORY);
+      refreshDashboard();
+    }
+  });
+
+  document.getElementById("mappingInfo").textContent =
+    `${MAPPING_DATA.length} SAP fields are mapped in this app. To change the mapping, edit MAPPING_DATA near the top of the embedded script.`;
+})();
+
+// ============================================================================
+// ABOUT TAB
+// ============================================================================
+(function aboutTabInit() {
+  const channelLines = CHANNEL_PATTERNS.map(([name, pattern]) => `   ${name.padEnd(14)} ${pattern}`).join("\n");
+  document.getElementById("aboutText").textContent =
+`A fully offline, browser-based tool that converts Unicommerce Sales and Return exports into
+SAP-ready upload files. Nothing is uploaded anywhere - all processing happens on your computer,
+in this browser tab. Files never leave your machine.
+
+Sales Upload uses a fixed, built-in header mapping (MAPPING_DATA) - the daily process needs no
+configuration. If Unicommerce ever renames a column, edit MAPPING_DATA near the top of the
+embedded script in this file.
+
+Return Upload reads the Return report, computes Total as raw Total minus Other charges and
+Other charges1, computes Unit Price as raw Total / Qty, and looks up RP Code by matching Sale
+Order Number + Product SKU Code against Sales history built from every Sales Upload run in
+this browser.
+
+Channel detection patterns (regex, matched against Display Order Code):
+${channelLines}
+   Anything else is labeled 'Other' rather than guessed.
+
+Sales history and preferences are stored in this browser's local storage only - they are not
+shared automatically across computers or browsers. Use Export/Import History under Settings to
+move Sales history between machines (e.g. after processing Sales on one depot's PC, export the
+history and import it on the PC that processes Returns).
+
+Marketplace filter on the Sales tab now supports selecting multiple marketplaces at once
+(checkbox multi-select) - leaving it empty or selecting all marketplaces behaves exactly like
+the previous "All marketplaces" option.`;
+})();
+
+// ---- init dashboard on load ----
+refreshDashboard();
+
+</script>
+</body>
+</html>
