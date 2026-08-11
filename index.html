@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>UC to SAP Order Upload Mapper</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
   :root {
     --bg: #F4F5F7; --banner-bg: #FFFFFF; --accent: #0B2E59; --accent-active: #082140;
@@ -18,11 +19,13 @@
     --error: #A32D2D; --error-bg: rgba(163,45,45,0.10); --error-rgb: 163,45,45;
     --scrollbar-thumb: rgba(11,46,89,0.28); --scrollbar-track: rgba(11,46,89,0.05);
     --chip-bg: rgba(11,46,89,0.08); --chip-border: rgba(11,46,89,0.22); --chip-text: #0B2E59;
-    --orb1: rgba(11,46,89,0.10); --orb2: rgba(91,155,255,0.12); --orb3: rgba(11,46,89,0.05);
-    --page-grad: radial-gradient(1200px 800px at 8% -10%, var(--orb1), transparent 60%),
-                 radial-gradient(1000px 700px at 110% 10%, var(--orb2), transparent 55%),
-                 radial-gradient(900px 900px at 50% 120%, var(--orb3), transparent 60%),
-                 linear-gradient(180deg, #F7F8FA 0%, #EEF1F5 100%);
+    --orb1: rgba(11,46,89,0.22); --orb2: rgba(91,155,255,0.30); --orb3: rgba(11,46,89,0.13);
+    --page-grad: radial-gradient(1300px 900px at 6% -12%, var(--orb1), transparent 62%),
+                 radial-gradient(1100px 800px at 108% 6%, var(--orb2), transparent 58%),
+                 radial-gradient(1000px 1000px at 46% 118%, var(--orb3), transparent 62%),
+                 linear-gradient(160deg, #E4EDFB 0%, #D2E2F8 42%, #EDF3FC 100%);
+    --bg-pattern: radial-gradient(rgba(11,46,89,0.18) 1.3px, transparent 1.3px);
+    --bg-pattern-size: 26px 26px;
   }
   [data-theme="charcoal"] {
     --bg: #F5F4F2; --accent: #2B2B2B; --accent-active: #161616; --muted: #6B6B6B;
@@ -34,11 +37,13 @@
     --error: #8A3A1E; --error-bg: rgba(138,58,30,0.10); --error-rgb: 138,58,30;
     --scrollbar-thumb: rgba(43,43,43,0.28); --scrollbar-track: rgba(43,43,43,0.05);
     --chip-bg: rgba(201,162,39,0.14); --chip-border: rgba(201,162,39,0.4); --chip-text: #8A6D12;
-    --orb1: rgba(201,162,39,0.14); --orb2: rgba(43,43,43,0.08); --orb3: rgba(201,162,39,0.08);
-    --page-grad: radial-gradient(1200px 800px at 8% -10%, var(--orb1), transparent 60%),
-                 radial-gradient(1000px 700px at 110% 10%, var(--orb2), transparent 55%),
-                 radial-gradient(900px 900px at 50% 120%, var(--orb3), transparent 60%),
-                 linear-gradient(180deg, #F8F7F3 0%, #EFEDE4 100%);
+    --orb1: rgba(201,162,39,0.30); --orb2: rgba(43,43,43,0.16); --orb3: rgba(201,162,39,0.18);
+    --page-grad: radial-gradient(1300px 900px at 6% -12%, var(--orb1), transparent 62%),
+                 radial-gradient(1100px 800px at 108% 6%, var(--orb2), transparent 58%),
+                 radial-gradient(1000px 1000px at 46% 118%, var(--orb3), transparent 62%),
+                 linear-gradient(160deg, #F4EBD2 0%, #ECDCA8 42%, #F7F1E2 100%);
+    --bg-pattern: repeating-linear-gradient(45deg, rgba(201,162,39,0.18) 0 1.5px, transparent 1.5px 26px);
+    --bg-pattern-size: auto;
   }
   [data-theme="maroon"] {
     --bg: #F6F4F4; --accent: #7A1F2B; --accent-active: #5A1620; --muted: #6B6060;
@@ -50,11 +55,13 @@
     --error: #A32D2D; --error-bg: rgba(163,45,45,0.10); --error-rgb: 163,45,45;
     --scrollbar-thumb: rgba(122,31,43,0.28); --scrollbar-track: rgba(122,31,43,0.05);
     --chip-bg: rgba(122,31,43,0.09); --chip-border: rgba(122,31,43,0.25); --chip-text: #7A1F2B;
-    --orb1: rgba(122,31,43,0.12); --orb2: rgba(216,120,132,0.14); --orb3: rgba(122,31,43,0.06);
-    --page-grad: radial-gradient(1200px 800px at 8% -10%, var(--orb1), transparent 60%),
-                 radial-gradient(1000px 700px at 110% 10%, var(--orb2), transparent 55%),
-                 radial-gradient(900px 900px at 50% 120%, var(--orb3), transparent 60%),
-                 linear-gradient(180deg, #F8F5F5 0%, #F0E9E9 100%);
+    --orb1: rgba(122,31,43,0.26); --orb2: rgba(216,120,132,0.32); --orb3: rgba(122,31,43,0.14);
+    --page-grad: radial-gradient(1300px 900px at 6% -12%, var(--orb1), transparent 62%),
+                 radial-gradient(1100px 800px at 108% 6%, var(--orb2), transparent 58%),
+                 radial-gradient(1000px 1000px at 46% 118%, var(--orb3), transparent 62%),
+                 linear-gradient(160deg, #F8E3E7 0%, #F0C6CE 42%, #FAEEF0 100%);
+    --bg-pattern: radial-gradient(rgba(122,31,43,0.17) 1.5px, transparent 1.5px);
+    --bg-pattern-size: 30px 30px;
   }
   [data-theme="forest"] {
     --bg: #F3F5F3; --accent: #1F4D3A; --accent-active: #153A2B; --muted: #5E6B63;
@@ -66,11 +73,14 @@
     --error: #A32D2D; --error-bg: rgba(163,45,45,0.10); --error-rgb: 163,45,45;
     --scrollbar-thumb: rgba(31,77,58,0.28); --scrollbar-track: rgba(31,77,58,0.05);
     --chip-bg: rgba(31,77,58,0.09); --chip-border: rgba(31,77,58,0.25); --chip-text: #1F4D3A;
-    --orb1: rgba(31,77,58,0.12); --orb2: rgba(112,180,150,0.14); --orb3: rgba(31,77,58,0.06);
-    --page-grad: radial-gradient(1200px 800px at 8% -10%, var(--orb1), transparent 60%),
-                 radial-gradient(1000px 700px at 110% 10%, var(--orb2), transparent 55%),
-                 radial-gradient(900px 900px at 50% 120%, var(--orb3), transparent 60%),
-                 linear-gradient(180deg, #F5F7F5 0%, #ECF1EE 100%);
+    --orb1: rgba(31,77,58,0.26); --orb2: rgba(112,180,150,0.32); --orb3: rgba(31,77,58,0.14);
+    --page-grad: radial-gradient(1300px 900px at 6% -12%, var(--orb1), transparent 62%),
+                 radial-gradient(1100px 800px at 108% 6%, var(--orb2), transparent 58%),
+                 radial-gradient(1000px 1000px at 46% 118%, var(--orb3), transparent 62%),
+                 linear-gradient(160deg, #E1F0E6 0%, #C2E3CE 42%, #EDF7EF 100%);
+    --bg-pattern: radial-gradient(rgba(31,77,58,0.20) 42px, transparent 43px),
+                  radial-gradient(rgba(31,77,58,0.15) 23px, transparent 24px);
+    --bg-pattern-size: 140px 140px, 90px 90px;
   }
   [data-theme="dark"] {
     --bg: #161B22; --banner-bg: #1F2733; --accent: #5B9BFF; --accent-active: #7FB0FF;
@@ -83,11 +93,14 @@
     --error: #FF7A7A; --error-bg: rgba(255,122,122,0.12); --error-rgb: 255,122,122;
     --scrollbar-thumb: rgba(91,155,255,0.35); --scrollbar-track: rgba(255,255,255,0.04);
     --chip-bg: rgba(91,155,255,0.14); --chip-border: rgba(91,155,255,0.35); --chip-text: #9CC4FF;
-    --orb1: rgba(91,155,255,0.16); --orb2: rgba(91,155,255,0.10); --orb3: rgba(150,90,255,0.10);
-    --page-grad: radial-gradient(1200px 800px at 8% -10%, var(--orb1), transparent 60%),
-                 radial-gradient(1000px 700px at 110% 10%, var(--orb3), transparent 55%),
-                 radial-gradient(900px 900px at 50% 120%, var(--orb2), transparent 60%),
-                 linear-gradient(180deg, #12161D 0%, #0E1116 100%);
+    --orb1: rgba(91,155,255,0.28); --orb2: rgba(91,155,255,0.18); --orb3: rgba(160,100,255,0.22);
+    --page-grad: radial-gradient(1300px 900px at 6% -12%, var(--orb1), transparent 62%),
+                 radial-gradient(1100px 800px at 108% 6%, var(--orb3), transparent 58%),
+                 radial-gradient(1000px 1000px at 46% 118%, var(--orb2), transparent 62%),
+                 linear-gradient(160deg, #151B26 0%, #0E1116 55%, #0B0D11 100%);
+    --bg-pattern: radial-gradient(rgba(255,255,255,0.65) 1px, transparent 1px),
+                  radial-gradient(rgba(255,255,255,0.4) 1px, transparent 1px);
+    --bg-pattern-size: 90px 90px, 46px 46px;
   }
 
   * { box-sizing: border-box; }
@@ -102,14 +115,24 @@
     background: var(--page-grad); background-attachment: fixed;
     position: relative;
   }
+  /* ---- per-theme background texture layer (distinct pattern per theme) ---- */
+  .bg-grid {
+    position: fixed; inset: 0; z-index: 0; pointer-events: none;
+    background-image: var(--bg-pattern);
+    background-size: var(--bg-pattern-size);
+    opacity: 1;
+    mask-image: radial-gradient(1500px 1300px at 50% 8%, #000 60%, transparent 100%);
+    -webkit-mask-image: radial-gradient(1500px 1300px at 50% 8%, #000 60%, transparent 100%);
+  }
+
   /* ---- floating ambient orbs (subtle, behind content) ---- */
   .bg-orb {
-    position: fixed; border-radius: 50%; filter: blur(50px); pointer-events: none; z-index: 0;
-    opacity: 0.9; animation: floaty 22s ease-in-out infinite;
+    position: fixed; border-radius: 50%; filter: blur(44px); pointer-events: none; z-index: 0;
+    opacity: 1; animation: floaty 22s ease-in-out infinite;
   }
-  .bg-orb.o1 { width: 380px; height: 380px; top: -120px; left: -100px; background: var(--orb1); animation-duration: 26s; }
-  .bg-orb.o2 { width: 300px; height: 300px; top: 30%; right: -120px; background: var(--orb2); animation-duration: 20s; animation-delay: -6s; }
-  .bg-orb.o3 { width: 340px; height: 340px; bottom: -140px; left: 30%; background: var(--orb3); animation-duration: 24s; animation-delay: -12s; }
+  .bg-orb.o1 { width: 440px; height: 440px; top: -140px; left: -120px; background: var(--orb1); animation-duration: 26s; }
+  .bg-orb.o2 { width: 360px; height: 360px; top: 26%; right: -140px; background: var(--orb2); animation-duration: 20s; animation-delay: -6s; }
+  .bg-orb.o3 { width: 400px; height: 400px; bottom: -160px; left: 28%; background: var(--orb3); animation-duration: 24s; animation-delay: -12s; }
   @keyframes floaty {
     0%, 100% { transform: translate(0,0) scale(1); }
     33% { transform: translate(30px,-24px) scale(1.06); }
@@ -134,13 +157,21 @@
     max-width: 1160px; margin: 0 auto; padding: 20px 24px 16px;
     display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 14px;
   }
-  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--accent); }
+  .brand-row { display: flex; align-items: center; gap: 14px; }
+  .brand-mark {
+    width: 46px; height: 46px; border-radius: 13px; flex-shrink: 0;
+    background: linear-gradient(135deg, var(--accent), var(--accent-active));
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 8px 20px rgba(var(--accent-rgb),0.35);
+    color: #fff; font-size: 19px;
+  }
+  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--accent); display: flex; align-items: center; gap: 6px; }
   .title {
-    font-family: Georgia, "Times New Roman", serif; font-size: 27px; font-weight: 700; margin: 4px 0 2px;
+    font-family: Georgia, "Times New Roman", serif; font-size: 27px; font-weight: 700; margin: 3px 0 2px;
     background: linear-gradient(90deg, var(--accent), var(--accent-active));
     -webkit-background-clip: text; background-clip: text; color: transparent;
   }
-  .subtitle { font-size: 13px; color: var(--muted); }
+  .subtitle { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
   .header-controls { display: flex; align-items: flex-end; gap: 18px; flex-wrap: wrap; }
   .theme-picker { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
   .theme-picker label { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; color: var(--accent); }
@@ -170,7 +201,9 @@
     background: transparent; color: var(--muted); border: none; padding: 10px 18px;
     font-size: 13px; font-weight: 700; cursor: pointer; border-radius: var(--radius-sm) var(--radius-sm) 0 0;
     transition: color .15s ease, background .15s ease, transform .12s ease;
+    display: inline-flex; align-items: center; gap: 8px;
   }
+  .tab-btn i { font-size: 12px; opacity: 0.85; }
   .tab-btn:hover { color: var(--text); background: rgba(var(--accent-rgb), 0.06); }
   .tab-btn:active { transform: scale(0.97); }
   .tab-btn.active { background: var(--accent); color: #fff; box-shadow: var(--shadow); }
@@ -181,24 +214,37 @@
   .section-label {
     font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: var(--accent);
     text-transform: uppercase; margin: 18px 0 8px;
+    display: flex; align-items: center; gap: 7px;
   }
+  .section-label i { font-size: 11px; opacity: 0.85; }
   .muted { color: var(--muted); font-size: 12px; }
 
   .dropzone {
     border: 1.5px dashed var(--border); background: var(--glass-bg); backdrop-filter: blur(8px);
-    border-radius: var(--radius); padding: 18px; display: flex; align-items: center; justify-content: space-between;
-    gap: 12px; cursor: pointer; transition: border-color .18s ease, background .18s ease, transform .12s ease, box-shadow .18s ease;
+    border-radius: var(--radius); padding: 22px; display: flex; align-items: center; justify-content: space-between;
+    gap: 14px; cursor: pointer; transition: border-color .18s ease, background .18s ease, transform .12s ease, box-shadow .18s ease;
   }
   .dropzone:hover { border-color: var(--accent); box-shadow: var(--shadow); transform: translateY(-1px); }
   .dropzone.dragover { border-color: var(--accent); border-style: solid; background: rgba(var(--accent-rgb),0.06); box-shadow: 0 0 0 4px rgba(var(--accent-rgb),0.12); }
-  .dropzone .hint { color: var(--muted); font-size: 13px; }
+  .dropzone-left { display: flex; align-items: center; gap: 14px; min-width: 0; }
+  .dropzone-icon {
+    width: 42px; height: 42px; border-radius: 11px; flex-shrink: 0;
+    background: rgba(var(--accent-rgb), 0.1); color: var(--accent);
+    display: flex; align-items: center; justify-content: center; font-size: 17px;
+    transition: transform .18s ease;
+  }
+  .dropzone:hover .dropzone-icon { transform: scale(1.08); }
+  .dropzone .hint { color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
   .dropzone .hint.has-file { color: var(--text); font-weight: 600; }
+  .dropzone-sub { font-size: 11px; color: var(--muted); margin-top: 2px; }
 
   button {
     font-family: inherit; font-size: 13px; font-weight: 700; border-radius: var(--radius-sm);
     padding: 9px 16px; cursor: pointer; background: var(--entry-bg); color: var(--text);
     border: 1px solid var(--border); transition: transform .12s ease, box-shadow .15s ease, background .15s ease, border-color .15s ease;
+    display: inline-flex; align-items: center; gap: 8px;
   }
+  button i { font-size: 12px; }
   button:hover:not(:disabled) { border-color: var(--accent); box-shadow: var(--shadow); transform: translateY(-1px); }
   button:active:not(:disabled) { transform: translateY(0) scale(0.97); }
   button.primary { background: linear-gradient(135deg, var(--accent), var(--accent-active)); color: #fff; border: none; }
@@ -271,26 +317,43 @@
   }
   .preview-empty { padding: 26px 14px; text-align: center; color: var(--muted); font-size: 12.5px; }
 
-  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(160px, 1fr)); gap: 12px; margin: 14px 0; }
+  .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin: 14px 0; }
   .card {
     background: var(--glass-bg); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px);
-    border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 14px 16px;
+    border: 1px solid var(--glass-border); border-radius: var(--radius); padding: 16px 18px;
     box-shadow: var(--shadow); transition: transform .15s ease, box-shadow .15s ease;
+    position: relative; overflow: hidden;
   }
-  .card:hover { transform: translateY(-2px); box-shadow: 0 14px 32px rgba(var(--accent-rgb),0.14); }
+  .card::before {
+    content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, var(--accent), var(--accent-active));
+  }
+  .card:hover { transform: translateY(-3px); box-shadow: 0 16px 36px rgba(var(--accent-rgb),0.16); }
+  .card-icon {
+    width: 32px; height: 32px; border-radius: 9px; background: rgba(var(--accent-rgb),0.1); color: var(--accent);
+    display: flex; align-items: center; justify-content: center; font-size: 14px; margin-bottom: 10px;
+  }
   .card .label { font-size: 10px; font-weight: 700; letter-spacing: 0.05em; color: var(--muted); text-transform: uppercase; }
-  .card .value { font-family: Georgia, serif; font-size: 21px; font-weight: 700; margin-top: 5px; color: var(--text); }
+  .card .value { font-family: Georgia, serif; font-size: 22px; font-weight: 700; margin-top: 5px; color: var(--text); }
 
-  .match-indicator { font-size: 13px; font-weight: 700; margin: 10px 0; padding: 8px 12px; border-radius: var(--radius-sm); display: inline-block; }
-  .match-indicator.ok { color: var(--success); background: var(--success-bg); }
-  .match-indicator.warn { color: var(--error); background: var(--error-bg); }
-  .match-indicator.neutral { color: var(--muted); background: var(--entry-bg); border: 1px solid var(--border); }
-  .match-indicator:empty { display: none; }
+  .match-indicator {
+    font-size: 13px; font-weight: 700; margin: 10px 0; padding: 9px 14px; border-radius: var(--radius-sm);
+    display: none; align-items: center; gap: 8px;
+  }
+  .match-indicator.ok { color: var(--success); background: var(--success-bg); display: inline-flex; }
+  .match-indicator.warn { color: var(--error); background: var(--error-bg); display: inline-flex; }
+  .match-indicator.neutral { color: var(--muted); background: var(--entry-bg); border: 1px solid var(--border); display: inline-flex; }
+  .match-indicator:empty { display: none !important; }
 
   .reminder-box {
     background: var(--glass-bg); backdrop-filter: blur(10px); border: 1px solid var(--glass-border);
     border-left: 4px solid var(--accent); border-radius: var(--radius-sm);
-    padding: 14px 18px; margin: 14px 0; font-size: 12.5px; line-height: 1.55; box-shadow: var(--shadow);
+    padding: 16px 18px 16px 16px; margin: 14px 0; font-size: 12.5px; line-height: 1.55; box-shadow: var(--shadow);
+    display: flex; gap: 12px; align-items: flex-start;
+  }
+  .reminder-box .reminder-icon {
+    width: 30px; height: 30px; border-radius: 9px; background: rgba(var(--accent-rgb),0.12); color: var(--accent);
+    display: flex; align-items: center; justify-content: center; font-size: 13px; flex-shrink: 0; margin-top: 1px;
   }
   .reminder-box b { color: var(--accent); }
 
@@ -309,9 +372,11 @@
   .ms-toggle {
     width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px;
     background: var(--entry-bg); border: 1px solid var(--border); border-radius: var(--radius-sm);
-    padding: 8px 12px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text);
+    padding: 9px 12px; cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text);
     transition: border-color .15s ease, box-shadow .15s ease;
   }
+  .ms-toggle-left { display: flex; align-items: center; gap: 8px; min-width: 0; flex: 1; }
+  .ms-toggle-left i { color: var(--accent); font-size: 12px; flex-shrink: 0; }
   .ms-toggle:hover { border-color: var(--accent); }
   .ms-dropdown.open .ms-toggle { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(var(--accent-rgb),0.15); }
   .ms-toggle-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; text-align: left; flex: 1; }
@@ -387,23 +452,28 @@
 </head>
 <body>
 
+<div class="bg-grid"></div>
 <div class="bg-orb o1"></div>
 <div class="bg-orb o2"></div>
 <div class="bg-orb o3"></div>
 
 <div class="banner">
   <div class="banner-inner">
-    <div>
-      <div class="eyebrow">SALES OPERATIONS &middot; ORDER UPLOAD AUTOMATION</div>
-      <div class="title">UC to SAP Order Upload Mapper</div>
-      <div class="subtitle">Mapping is built in &mdash; drop today's dump file to begin</div>
+    <div class="brand-row">
+      <div class="brand-mark"><i class="fa-solid fa-diagram-project"></i></div>
+      <div>
+        <div class="eyebrow"><i class="fa-solid fa-bolt"></i> SALES OPERATIONS &middot; ORDER UPLOAD AUTOMATION</div>
+        <div class="title">UC to SAP Order Upload Mapper</div>
+        <div class="subtitle"><i class="fa-regular fa-circle-check" style="color:var(--success)"></i> Mapping is built in &mdash; drop today's dump file to begin</div>
+      </div>
     </div>
     <div class="header-controls">
       <div class="sound-quick-toggle on" id="soundQuickToggle" data-tip="Toggle sound">
-        <span class="dot"></span><span id="soundQuickLabel">Sound On</span>
+        <i class="fa-solid fa-volume-high" id="soundQuickIcon" style="font-size:12px;"></i>
+        <span id="soundQuickLabel">Sound On</span>
       </div>
       <div class="theme-picker">
-        <label for="themeSelect">THEME</label>
+        <label for="themeSelect"><i class="fa-solid fa-palette"></i> THEME</label>
         <select id="themeSelect">
           <option value="navy">Navy Advisory</option>
           <option value="charcoal">Charcoal &amp; Gold</option>
@@ -418,76 +488,85 @@
 
 <div class="container">
   <div class="tabs">
-    <button class="tab-btn active" data-tab="dashboard">Dashboard</button>
-    <button class="tab-btn" data-tab="sales">Sales Upload</button>
-    <button class="tab-btn" data-tab="return">Return Upload</button>
-    <button class="tab-btn" data-tab="settings">Settings</button>
-    <button class="tab-btn" data-tab="about">About</button>
+    <button class="tab-btn active" data-tab="dashboard"><i class="fa-solid fa-gauge-high"></i> Dashboard</button>
+    <button class="tab-btn" data-tab="sales"><i class="fa-solid fa-cart-shopping"></i> Sales Upload</button>
+    <button class="tab-btn" data-tab="return"><i class="fa-solid fa-rotate-left"></i> Return Upload</button>
+    <button class="tab-btn" data-tab="settings"><i class="fa-solid fa-gear"></i> Settings</button>
+    <button class="tab-btn" data-tab="about"><i class="fa-regular fa-circle-question"></i> About</button>
   </div>
 
   <!-- ==================== DASHBOARD TAB ==================== -->
   <div class="tab-panel active" id="tab-dashboard">
-    <div class="section-label">Dashboard &mdash; Input vs Output</div>
+    <div class="section-label"><i class="fa-solid fa-gauge-high"></i> Dashboard &mdash; Input vs Output</div>
     <div class="card-grid">
-      <div class="card"><div class="label">Input Qty</div><div class="value" id="dashInputQty">-</div></div>
-      <div class="card"><div class="label">Output Qty</div><div class="value" id="dashOutputQty">-</div></div>
-      <div class="card"><div class="label">Input Value</div><div class="value" id="dashInputValue">-</div></div>
-      <div class="card"><div class="label">Output Value</div><div class="value" id="dashOutputValue">-</div></div>
-      <div class="card"><div class="label">Last Sales Run</div><div class="value" id="dashLastSales" style="font-size:15px">-</div></div>
-      <div class="card"><div class="label">Last Return Run</div><div class="value" id="dashLastReturn" style="font-size:15px">-</div></div>
-      <div class="card"><div class="label">Sales History Entries</div><div class="value" id="dashHistoryCount" style="font-size:15px">0</div></div>
+      <div class="card"><div class="card-icon"><i class="fa-solid fa-file-import"></i></div><div class="label">Input Qty</div><div class="value" id="dashInputQty">-</div></div>
+      <div class="card"><div class="card-icon"><i class="fa-solid fa-file-export"></i></div><div class="label">Output Qty</div><div class="value" id="dashOutputQty">-</div></div>
+      <div class="card"><div class="card-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div><div class="label">Input Value</div><div class="value" id="dashInputValue">-</div></div>
+      <div class="card"><div class="card-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div><div class="label">Output Value</div><div class="value" id="dashOutputValue">-</div></div>
+      <div class="card"><div class="card-icon"><i class="fa-solid fa-cart-shopping"></i></div><div class="label">Last Sales Run</div><div class="value" id="dashLastSales" style="font-size:15px">-</div></div>
+      <div class="card"><div class="card-icon"><i class="fa-solid fa-rotate-left"></i></div><div class="label">Last Return Run</div><div class="value" id="dashLastReturn" style="font-size:15px">-</div></div>
+      <div class="card"><div class="card-icon"><i class="fa-solid fa-clock-rotate-left"></i></div><div class="label">Sales History Entries</div><div class="value" id="dashHistoryCount" style="font-size:15px">0</div></div>
     </div>
     <div class="match-indicator neutral" id="dashMatchIndicator"></div>
     <div class="muted">Sales value based on 'Total Price' / 'ORD_TOT' (to be confirmed).</div>
 
     <div class="reminder-box">
-      <b>Reminder &mdash; how RP Code works for Returns:</b> every time you run a Sales Upload in this browser,
-      the tool remembers each order/SKU's Shipping Package Code. When you later process a Return, it looks up
-      RP Code from that memory by matching Sale Order Number + Product SKU Code. If a return's order was never
-      seen in a Sales run <i>on this browser</i>, RP Code is left blank &mdash; it is never guessed.
-      Sales history is stored in this browser only (not shared automatically across computers) &mdash;
-      use <b>Export / Import History</b> under Settings to move it between machines.
+      <div class="reminder-icon"><i class="fa-solid fa-lightbulb"></i></div>
+      <div>
+        <b>Reminder &mdash; how RP Code works for Returns:</b> every time you run a Sales Upload in this browser,
+        the tool remembers each order/SKU's Shipping Package Code. When you later process a Return, it looks up
+        RP Code from that memory by matching Sale Order Number + Product SKU Code. If a return's order was never
+        seen in a Sales run <i>on this browser</i>, RP Code is left blank &mdash; it is never guessed.
+        Sales history is stored in this browser only (not shared automatically across computers) &mdash;
+        use <b>Export / Import History</b> under Settings to move it between machines.
+      </div>
     </div>
   </div>
 
   <!-- ==================== SALES TAB ==================== -->
   <div class="tab-panel" id="tab-sales">
-    <div class="section-label">Sales Upload</div>
+    <div class="section-label"><i class="fa-solid fa-cart-shopping"></i> Sales Upload</div>
     <div class="muted">Generates the SAP sales upload using the built-in Unicommerce to SAP header mapping.</div>
 
     <div class="field-row">
-      <label class="field-label" id="salesMarketplaceLabel">MARKETPLACE FILTER</label>
+      <label class="field-label" id="salesMarketplaceLabel"><i class="fa-solid fa-store"></i> MARKETPLACE FILTER</label>
       <div class="ms-dropdown" id="marketplaceDropdown">
         <button type="button" class="ms-toggle" id="marketplaceToggle" aria-haspopup="listbox" aria-expanded="false">
-          <span class="ms-toggle-text" id="marketplaceToggleText">All marketplaces</span>
+          <span class="ms-toggle-left"><i class="fa-solid fa-tags"></i><span class="ms-toggle-text" id="marketplaceToggleText">All marketplaces</span></span>
           <span class="ms-caret">&#9662;</span>
         </button>
         <div class="ms-panel" id="marketplacePanel" role="listbox">
           <div class="ms-chips" id="marketplaceChips"></div>
           <div class="ms-actions">
-            <button type="button" id="marketplaceSelectAll">Select All</button>
-            <button type="button" id="marketplaceClearAll">Clear All</button>
+            <button type="button" id="marketplaceSelectAll"><i class="fa-solid fa-check-double"></i> Select All</button>
+            <button type="button" id="marketplaceClearAll"><i class="fa-solid fa-xmark"></i> Clear All</button>
           </div>
           <div class="ms-options" id="marketplaceOptions"></div>
         </div>
       </div>
     </div>
 
-    <div class="section-label" style="margin-top:14px;">Today's Unicommerce Dump File (.csv or .xlsx)</div>
+    <div class="section-label" style="margin-top:14px;"><i class="fa-solid fa-file-arrow-up"></i> Today's Unicommerce Dump File (.csv or .xlsx)</div>
     <div class="dropzone" id="salesDropzone">
-      <span class="hint" id="salesHint">Drag &amp; drop a file here, or click to browse</span>
-      <button id="salesBrowseBtn" type="button">Browse...</button>
+      <div class="dropzone-left">
+        <div class="dropzone-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+        <div>
+          <span class="hint" id="salesHint">Drag &amp; drop a file here, or click to browse</span>
+          <div class="dropzone-sub">Accepts .csv, .xlsx, .xls, .xltx, .xlsm</div>
+        </div>
+      </div>
+      <button id="salesBrowseBtn" type="button"><i class="fa-solid fa-folder-open"></i> Browse...</button>
       <input type="file" id="salesFileInput" accept=".csv,.xlsx,.xls,.xltx,.xlsm" style="display:none;">
     </div>
     <div class="field-row" id="salesSheetRow" style="display:none;">
-      <label class="field-label">SHEET</label>
+      <label class="field-label"><i class="fa-solid fa-table-list"></i> SHEET</label>
       <select id="salesSheetSelect"></select>
     </div>
 
     <div class="btn-row">
-      <button class="primary" id="salesGenerateBtn">Generate SAP Upload File</button>
-      <button id="salesDownloadBtn" disabled>Download SAP Upload File</button>
-      <button id="salesClearBtn">Clear / Reset</button>
+      <button class="primary" id="salesGenerateBtn"><i class="fa-solid fa-play"></i> Generate SAP Upload File</button>
+      <button id="salesDownloadBtn" disabled><i class="fa-solid fa-download"></i> Download SAP Upload File</button>
+      <button id="salesClearBtn"><i class="fa-solid fa-broom"></i> Clear / Reset</button>
     </div>
 
     <div class="progress-wrap" id="salesProgressWrap">
@@ -500,33 +579,58 @@
       </div>
     </div>
 
-    <div class="section-label">Activity Log</div>
+    <div class="section-label"><i class="fa-solid fa-terminal"></i> Activity Log</div>
     <div class="log" id="salesLog"></div>
 
-    <div class="section-label">Output Preview (first 100 rows)</div>
+    <div class="section-label"><i class="fa-solid fa-table"></i> Output Preview (first 100 rows)</div>
     <div class="preview-scroll"><table class="preview" id="salesPreviewTable"></table></div>
   </div>
 
   <!-- ==================== RETURN TAB ==================== -->
   <div class="tab-panel" id="tab-return">
-    <div class="section-label">Return Upload</div>
+    <div class="section-label"><i class="fa-solid fa-rotate-left"></i> Return Upload</div>
     <div class="muted">Total = raw Total &minus; Other charges; Unit Price = raw Total / Qty; RP Code is looked up from Sales history.</div>
 
-    <div class="section-label" style="margin-top:14px;">Today's Return Dump File (.csv or .xlsx)</div>
+    <div class="field-row">
+      <label class="field-label"><i class="fa-solid fa-store"></i> MARKETPLACE FILTER</label>
+      <div class="ms-dropdown" id="returnMarketplaceDropdown">
+        <button type="button" class="ms-toggle" id="returnMarketplaceToggle" aria-haspopup="listbox" aria-expanded="false">
+          <span class="ms-toggle-left"><i class="fa-solid fa-tags"></i><span class="ms-toggle-text" id="returnMarketplaceToggleText">All marketplaces</span></span>
+          <span class="ms-caret">&#9662;</span>
+        </button>
+        <div class="ms-panel" id="returnMarketplacePanel" role="listbox">
+          <div class="ms-chips" id="returnMarketplaceChips"></div>
+          <div class="ms-actions">
+            <button type="button" id="returnMarketplaceSelectAll"><i class="fa-solid fa-check-double"></i> Select All</button>
+            <button type="button" id="returnMarketplaceClearAll"><i class="fa-solid fa-xmark"></i> Clear All</button>
+          </div>
+          <div class="ms-options" id="returnMarketplaceOptions"></div>
+        </div>
+      </div>
+    </div>
+    <div class="muted" style="margin-top:-2px;">Filters by marketplace using the same order-number pattern matching as Sales, applied to "Sale Order Number".</div>
+
+    <div class="section-label" style="margin-top:14px;"><i class="fa-solid fa-file-arrow-up"></i> Today's Return Dump File (.csv or .xlsx)</div>
     <div class="dropzone" id="returnDropzone">
-      <span class="hint" id="returnHint">Drag &amp; drop a file here, or click to browse</span>
-      <button id="returnBrowseBtn" type="button">Browse...</button>
+      <div class="dropzone-left">
+        <div class="dropzone-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+        <div>
+          <span class="hint" id="returnHint">Drag &amp; drop a file here, or click to browse</span>
+          <div class="dropzone-sub">Accepts .csv, .xlsx, .xls, .xltx, .xlsm</div>
+        </div>
+      </div>
+      <button id="returnBrowseBtn" type="button"><i class="fa-solid fa-folder-open"></i> Browse...</button>
       <input type="file" id="returnFileInput" accept=".csv,.xlsx,.xls,.xltx,.xlsm" style="display:none;">
     </div>
     <div class="field-row" id="returnSheetRow" style="display:none;">
-      <label class="field-label">SHEET</label>
+      <label class="field-label"><i class="fa-solid fa-table-list"></i> SHEET</label>
       <select id="returnSheetSelect"></select>
     </div>
 
     <div class="btn-row">
-      <button class="primary" id="returnGenerateBtn">Generate Return SAP Upload File</button>
-      <button id="returnDownloadBtn" disabled>Download Return SAP Upload File</button>
-      <button id="returnClearBtn">Clear / Reset</button>
+      <button class="primary" id="returnGenerateBtn"><i class="fa-solid fa-play"></i> Generate Return SAP Upload File</button>
+      <button id="returnDownloadBtn" disabled><i class="fa-solid fa-download"></i> Download Return SAP Upload File</button>
+      <button id="returnClearBtn"><i class="fa-solid fa-broom"></i> Clear / Reset</button>
     </div>
 
     <div class="progress-wrap" id="returnProgressWrap">
@@ -539,39 +643,39 @@
       </div>
     </div>
 
-    <div class="section-label">Activity Log</div>
+    <div class="section-label"><i class="fa-solid fa-terminal"></i> Activity Log</div>
     <div class="log" id="returnLog"></div>
 
-    <div class="section-label">Output Preview (first 100 rows)</div>
+    <div class="section-label"><i class="fa-solid fa-table"></i> Output Preview (first 100 rows)</div>
     <div class="preview-scroll"><table class="preview" id="returnPreviewTable"></table></div>
   </div>
 
   <!-- ==================== SETTINGS TAB ==================== -->
   <div class="tab-panel" id="tab-settings">
-    <div class="section-label">Settings</div>
+    <div class="section-label"><i class="fa-solid fa-gear"></i> Settings</div>
     <div class="muted">Saved automatically in this browser.</div>
 
     <div class="checkbox-row" style="margin-top:16px;">
       <input type="checkbox" id="soundToggle" checked>
-      <label for="soundToggle">Sound on key steps (start, progress, done, error)</label>
+      <label for="soundToggle"><i class="fa-solid fa-volume-high"></i> Sound on key steps (start, progress, done, error)</label>
     </div>
 
-    <div class="section-label">Sales History (for Return RP Code lookup)</div>
+    <div class="section-label"><i class="fa-solid fa-clock-rotate-left"></i> Sales History (for Return RP Code lookup)</div>
     <div class="muted" id="historyStatus">0 order/SKU entries stored in this browser.</div>
     <div class="btn-row">
-      <button id="exportHistoryBtn">Export History...</button>
-      <button id="importHistoryBtn">Import History...</button>
+      <button id="exportHistoryBtn"><i class="fa-solid fa-file-export"></i> Export History...</button>
+      <button id="importHistoryBtn"><i class="fa-solid fa-file-import"></i> Import History...</button>
       <input type="file" id="importHistoryInput" accept=".json" style="display:none;">
-      <button id="clearHistoryBtn">Clear Sales History</button>
+      <button id="clearHistoryBtn"><i class="fa-solid fa-trash"></i> Clear Sales History</button>
     </div>
 
-    <div class="section-label">Mapping</div>
+    <div class="section-label"><i class="fa-solid fa-diagram-project"></i> Mapping</div>
     <div class="muted" id="mappingInfo"></div>
   </div>
 
   <!-- ==================== ABOUT TAB ==================== -->
   <div class="tab-panel" id="tab-about">
-    <div class="section-label">About</div>
+    <div class="section-label"><i class="fa-regular fa-circle-question"></i> About</div>
     <pre class="about-text" id="aboutText"></pre>
   </div>
 </div>
@@ -1108,9 +1212,13 @@ const soundQuickLabelEl = document.getElementById("soundQuickLabel");
 
 soundToggleEl.checked = localStorage.getItem(LS_SOUND) !== "false";
 
+const soundQuickIconEl = document.getElementById("soundQuickIcon");
 function syncSoundUI() {
   soundQuickToggleEl.classList.toggle("on", soundToggleEl.checked);
   soundQuickLabelEl.textContent = soundToggleEl.checked ? "Sound On" : "Sound Off";
+  if (soundQuickIconEl) {
+    soundQuickIconEl.className = soundToggleEl.checked ? "fa-solid fa-volume-high" : "fa-solid fa-volume-xmark";
+  }
 }
 syncSoundUI();
 
@@ -1377,95 +1485,89 @@ function yieldToUI() {
 }
 
 // ============================================================================
-// MARKETPLACE MULTI-SELECT (Sales tab) — selections feed straight into the
-// real filtering logic (filterRowsByChannels) used by the Sales generator.
+// MARKETPLACE MULTI-SELECT (reusable) — selections feed straight into the real
+// filtering logic (filterRowsByChannels). Used on both Sales and Return tabs,
+// each with its own independent selection state.
 // ============================================================================
 const MARKETPLACES = ["Amazon", "Flipkart", "JioMart", "Kesh-King", "Zandu Care", "Kiosk", "Dpanda"];
-const selectedMarketplaces = new Set(); // empty set == "All marketplaces" (no filter), same as legacy "All" option
 
-function marketplaceToggleLabel() {
-  if (selectedMarketplaces.size === 0 || selectedMarketplaces.size === MARKETPLACES.length) return "All marketplaces";
-  return Array.from(selectedMarketplaces).join(" \u2022 ");
-}
+function createMarketplaceMultiSelect(ids) {
+  const selected = new Set(); // empty set == "All marketplaces" (no filter), same as legacy "All" option
+  const dropdown = document.getElementById(ids.dropdown);
+  const toggle = document.getElementById(ids.toggle);
+  const toggleText = document.getElementById(ids.toggleText);
+  const chipsEl = document.getElementById(ids.chips);
+  const optionsEl = document.getElementById(ids.options);
+  const panel = document.getElementById(ids.panel);
+  const selectAllBtn = document.getElementById(ids.selectAll);
+  const clearAllBtn = document.getElementById(ids.clearAll);
 
-function renderMarketplaceUI() {
-  const toggleText = document.getElementById("marketplaceToggleText");
-  const chipsEl = document.getElementById("marketplaceChips");
-  const optionsEl = document.getElementById("marketplaceOptions");
+  function label() {
+    if (selected.size === 0 || selected.size === MARKETPLACES.length) return "All marketplaces";
+    return Array.from(selected).join(" \u2022 ");
+  }
 
-  toggleText.textContent = marketplaceToggleLabel();
+  function render() {
+    toggleText.textContent = label();
 
-  chipsEl.innerHTML = "";
-  selectedMarketplaces.forEach((name) => {
-    const chip = document.createElement("span");
-    chip.className = "ms-chip";
-    const label = document.createElement("span");
-    label.textContent = name;
-    const removeBtn = document.createElement("button");
-    removeBtn.type = "button";
-    removeBtn.textContent = "\u00d7";
-    removeBtn.setAttribute("aria-label", "Remove " + name);
-    removeBtn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      selectedMarketplaces.delete(name);
-      playSound("uncheck");
-      renderMarketplaceUI();
-    });
-    chip.appendChild(label);
-    chip.appendChild(removeBtn);
-    chipsEl.appendChild(chip);
-  });
-
-  optionsEl.innerHTML = "";
-  MARKETPLACES.forEach((name) => {
-    const checked = selectedMarketplaces.has(name);
-    const opt = document.createElement("div");
-    opt.className = "ms-option" + (checked ? " checked" : "");
-    opt.setAttribute("role", "option");
-    opt.setAttribute("aria-selected", String(checked));
-
-    const cb = document.createElement("input");
-    cb.type = "checkbox";
-    cb.checked = checked;
-
-    const dot = document.createElement("span");
-    dot.className = "dot";
-
-    const label = document.createElement("span");
-    label.textContent = name;
-    label.style.flex = "1";
-
-    opt.appendChild(cb);
-    opt.appendChild(label);
-    opt.appendChild(dot);
-
-    opt.addEventListener("click", () => {
-      if (selectedMarketplaces.has(name)) {
-        selectedMarketplaces.delete(name);
+    chipsEl.innerHTML = "";
+    selected.forEach((name) => {
+      const chip = document.createElement("span");
+      chip.className = "ms-chip";
+      const lbl = document.createElement("span");
+      lbl.textContent = name;
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.textContent = "\u00d7";
+      removeBtn.setAttribute("aria-label", "Remove " + name);
+      removeBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        selected.delete(name);
         playSound("uncheck");
-      } else {
-        selectedMarketplaces.add(name);
-        playSound("check");
-      }
-      renderMarketplaceUI();
+        render();
+      });
+      chip.appendChild(lbl);
+      chip.appendChild(removeBtn);
+      chipsEl.appendChild(chip);
     });
 
-    optionsEl.appendChild(opt);
-  });
-}
+    optionsEl.innerHTML = "";
+    MARKETPLACES.forEach((name) => {
+      const checked = selected.has(name);
+      const opt = document.createElement("div");
+      opt.className = "ms-option" + (checked ? " checked" : "");
+      opt.setAttribute("role", "option");
+      opt.setAttribute("aria-selected", String(checked));
 
-function getSelectedMarketplaces() {
-  return Array.from(selectedMarketplaces);
-}
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = checked;
 
-function resetMarketplaceSelection() {
-  selectedMarketplaces.clear();
-  renderMarketplaceUI();
-}
+      const dot = document.createElement("span");
+      dot.className = "dot";
 
-(function marketplaceDropdownInit() {
-  const dropdown = document.getElementById("marketplaceDropdown");
-  const toggle = document.getElementById("marketplaceToggle");
+      const lbl = document.createElement("span");
+      lbl.textContent = name;
+      lbl.style.flex = "1";
+
+      opt.appendChild(cb);
+      opt.appendChild(lbl);
+      opt.appendChild(dot);
+
+      opt.addEventListener("click", () => {
+        if (selected.has(name)) {
+          selected.delete(name);
+          playSound("uncheck");
+        } else {
+          selected.add(name);
+          playSound("check");
+        }
+        render();
+      });
+
+      optionsEl.appendChild(opt);
+    });
+  }
 
   function openPanel() {
     dropdown.classList.add("open");
@@ -1483,22 +1585,19 @@ function resetMarketplaceSelection() {
     e.stopPropagation();
     dropdown.classList.contains("open") ? closePanel() : openPanel();
   });
-
-  document.getElementById("marketplaceSelectAll").addEventListener("click", (e) => {
+  selectAllBtn.addEventListener("click", (e) => {
     e.stopPropagation();
-    MARKETPLACES.forEach((m) => selectedMarketplaces.add(m));
+    MARKETPLACES.forEach((m) => selected.add(m));
     playSound("check");
-    renderMarketplaceUI();
+    render();
   });
-  document.getElementById("marketplaceClearAll").addEventListener("click", (e) => {
+  clearAllBtn.addEventListener("click", (e) => {
     e.stopPropagation();
-    selectedMarketplaces.clear();
+    selected.clear();
     playSound("uncheck");
-    renderMarketplaceUI();
+    render();
   });
-
-  document.getElementById("marketplacePanel").addEventListener("click", (e) => e.stopPropagation());
-
+  panel.addEventListener("click", (e) => e.stopPropagation());
   document.addEventListener("click", (e) => {
     if (!dropdown.contains(e.target)) closePanel();
   });
@@ -1506,8 +1605,24 @@ function resetMarketplaceSelection() {
     if (e.key === "Escape") closePanel();
   });
 
-  renderMarketplaceUI();
-})();
+  render();
+
+  return {
+    getSelected: () => Array.from(selected),
+    reset: () => { selected.clear(); render(); },
+  };
+}
+
+const salesMarketplaceCtrl = createMarketplaceMultiSelect({
+  dropdown: "marketplaceDropdown", toggle: "marketplaceToggle", toggleText: "marketplaceToggleText",
+  chips: "marketplaceChips", options: "marketplaceOptions", panel: "marketplacePanel",
+  selectAll: "marketplaceSelectAll", clearAll: "marketplaceClearAll",
+});
+const returnMarketplaceCtrl = createMarketplaceMultiSelect({
+  dropdown: "returnMarketplaceDropdown", toggle: "returnMarketplaceToggle", toggleText: "returnMarketplaceToggleText",
+  chips: "returnMarketplaceChips", options: "returnMarketplaceOptions", panel: "returnMarketplacePanel",
+  selectAll: "returnMarketplaceSelectAll", clearAll: "returnMarketplaceClearAll",
+});
 
 // ============================================================================
 // SALES TAB
@@ -1572,7 +1687,7 @@ function resetMarketplaceSelection() {
     if (prevEmpty) prevEmpty.remove();
     downloadBtn.disabled = true;
     lastResult = null;
-    resetMarketplaceSelection();
+    salesMarketplaceCtrl.reset();
   });
 
   generateBtn.addEventListener("click", async () => {
@@ -1605,7 +1720,7 @@ function resetMarketplaceSelection() {
 
       let dataRows = allRows;
       let filtered = false;
-      const selectedMarkets = getSelectedMarketplaces();
+      const selectedMarkets = salesMarketplaceCtrl.getSelected();
       const isAllMarkets = selectedMarkets.length === 0 || selectedMarkets.length === MARKETPLACES.length;
       if (!isAllMarkets) {
         const before = dataRows.length;
@@ -1731,6 +1846,7 @@ function resetMarketplaceSelection() {
     if (prevEmpty) prevEmpty.remove();
     downloadBtn.disabled = true;
     lastResult = null;
+    returnMarketplaceCtrl.reset();
   });
 
   generateBtn.addEventListener("click", async () => {
@@ -1751,14 +1867,28 @@ function resetMarketplaceSelection() {
       logMsg(logEl, `Reading Return dump file: ${currentFile.name}` + (isExcel ? ` (sheet '${sheetName}')` : " (CSV)"));
       await yieldToUI();
 
-      const { headerIndex, dataRows } = await loadDumpFile(currentFile, isExcel ? sheetName : null);
-      logMsg(logEl, `Found ${dataRows.length} return rows in the dump.`);
+      const { headerIndex, dataRows: allRows } = await loadDumpFile(currentFile, isExcel ? sheetName : null);
+      logMsg(logEl, `Found ${allRows.length} return rows in the dump.`);
       setProgress(progressWrap, progressFill, statusEl, stepsEl, 20, "Validating columns...");
       playSound("step");
       await yieldToUI();
 
-      const inputQty = dataRows.length;
-      const inputValue = sumInputValue(headerIndex, dataRows, RETURN_TOTAL_SOURCE_COL);
+      const inputQty = allRows.length;
+      const inputValue = sumInputValue(headerIndex, allRows, RETURN_TOTAL_SOURCE_COL);
+
+      let dataRows = allRows;
+      let filtered = false;
+      const selectedMarkets = returnMarketplaceCtrl.getSelected();
+      const isAllMarkets = selectedMarkets.length === 0 || selectedMarkets.length === MARKETPLACES.length;
+      if (!isAllMarkets) {
+        const before = dataRows.length;
+        statusEl.textContent = "Mapping marketplace SKUs...";
+        dataRows = filterRowsByChannels(headerIndex, dataRows, selectedMarkets, "Sale Order Number");
+        logMsg(logEl, `Marketplace filter (${selectedMarkets.join(", ")}): kept ${dataRows.length} of ${before} rows.`);
+        filtered = true;
+      }
+      setProgress(progressWrap, progressFill, statusEl, stepsEl, 35, "Mapping marketplace SKUs...");
+      await yieldToUI();
 
       const history = loadHistory();
       logMsg(logEl, `Loaded Sales history (${Object.keys(history).length} order/SKU entries known).`);
@@ -1783,7 +1913,7 @@ function resetMarketplaceSelection() {
       dash.inputQty = inputQty; dash.outputQty = outputRows.length;
       dash.inputValue = inputValue; dash.outputValue = outputValue;
       dash.lastReturnRun = new Date();
-      updateMatchIndicator(inputQty, outputRows.length, inputValue, outputValue, { mode: "RETURN" });
+      updateMatchIndicator(inputQty, outputRows.length, inputValue, outputValue, { qtyFiltered: filtered, mode: "RETURN" });
       refreshDashboard();
       setProgress(progressWrap, progressFill, statusEl, stepsEl, 97, "Finalizing results...");
       await yieldToUI();
