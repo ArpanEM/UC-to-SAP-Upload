@@ -115,7 +115,6 @@
     background: var(--page-grad); background-attachment: fixed;
     position: relative;
   }
-  /* ---- per-theme background texture layer (distinct pattern per theme) ---- */
   .bg-grid {
     position: fixed; inset: 0; z-index: 0; pointer-events: none;
     background-image: var(--bg-pattern);
@@ -124,8 +123,6 @@
     mask-image: radial-gradient(1500px 1300px at 50% 8%, #000 60%, transparent 100%);
     -webkit-mask-image: radial-gradient(1500px 1300px at 50% 8%, #000 60%, transparent 100%);
   }
-
-  /* ---- floating ambient orbs (subtle, behind content) ---- */
   .bg-orb {
     position: fixed; border-radius: 50%; filter: blur(44px); pointer-events: none; z-index: 0;
     opacity: 1; animation: floaty 22s ease-in-out infinite;
@@ -138,9 +135,7 @@
     33% { transform: translate(30px,-24px) scale(1.06); }
     66% { transform: translate(-24px,18px) scale(0.96); }
   }
-  @media (prefers-reduced-motion: reduce) {
-    .bg-orb { animation: none; }
-  }
+  @media (prefers-reduced-motion: reduce) { .bg-orb { animation: none; } }
 
   ::-webkit-scrollbar { width: 10px; height: 10px; }
   ::-webkit-scrollbar-track { background: var(--scrollbar-track); border-radius: 8px; }
@@ -172,7 +167,7 @@
     -webkit-background-clip: text; background-clip: text; color: transparent;
   }
   .subtitle { font-size: 13px; color: var(--muted); display: flex; align-items: center; gap: 6px; }
-  .header-controls { display: flex; align-items: flex-end; gap: 18px; flex-wrap: wrap; }
+  .header-controls { display: flex; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
   .theme-picker { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
   .theme-picker label { font-size: 10px; font-weight: 700; letter-spacing: 0.06em; color: var(--accent); }
 
@@ -182,7 +177,6 @@
     font-size: 12px; font-weight: 700; color: var(--text); transition: all .18s ease; user-select: none;
   }
   .sound-quick-toggle:hover { border-color: var(--accent); transform: translateY(-1px); box-shadow: var(--shadow); }
-  .sound-quick-toggle .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); transition: background .2s ease, box-shadow .2s ease; }
   .sound-quick-toggle.on .dot { background: var(--success); box-shadow: 0 0 8px rgba(var(--success-rgb),0.7); }
 
   select, input[type=text] {
@@ -195,8 +189,9 @@
   }
   input[type=checkbox] { accent-color: var(--accent); width: 15px; height: 15px; cursor: pointer; }
 
-  .container { max-width: 1160px; margin: 0 auto; padding: 20px 24px 48px; position: relative; z-index: 1; }
-  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 20px; flex-wrap: wrap; }
+  .container { max-width: 1160px; margin: 0 auto; padding: 20px 24px 64px; position: relative; z-index: 1; }
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--border); margin-bottom: 20px; flex-wrap: wrap; align-items: center; justify-content: space-between; }
+  .tabs-left { display: flex; gap: 4px; flex-wrap: wrap; }
   .tab-btn {
     background: transparent; color: var(--muted); border: none; padding: 10px 18px;
     font-size: 13px; font-weight: 700; cursor: pointer; border-radius: var(--radius-sm) var(--radius-sm) 0 0;
@@ -214,16 +209,30 @@
   .section-label {
     font-size: 11px; font-weight: 700; letter-spacing: 0.06em; color: var(--accent);
     text-transform: uppercase; margin: 18px 0 8px;
-    display: flex; align-items: center; gap: 7px;
+    display: flex; align-items: center; gap: 7px; flex-wrap: wrap;
   }
   .section-label i { font-size: 11px; opacity: 0.85; }
   .muted { color: var(--muted); font-size: 12px; }
+  .badge-optional {
+    font-size: 9.5px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;
+    background: var(--chip-bg); color: var(--chip-text); border: 1px solid var(--chip-border);
+    padding: 2px 8px; border-radius: 999px;
+  }
+  .info-toggle-btn {
+    padding: 2px 9px; font-size: 11px; font-weight: 700; border-radius: 999px;
+    background: transparent; border: 1px solid var(--border); color: var(--accent);
+    margin-left: 6px; vertical-align: middle;
+  }
+  .info-toggle-btn i { font-size: 11px; }
+  .info-toggle-btn:hover { background: rgba(var(--accent-rgb),0.08); }
 
   .dropzone {
     border: 1.5px dashed var(--border); background: var(--glass-bg); backdrop-filter: blur(8px);
     border-radius: var(--radius); padding: 22px; display: flex; align-items: center; justify-content: space-between;
     gap: 14px; cursor: pointer; transition: border-color .18s ease, background .18s ease, transform .12s ease, box-shadow .18s ease;
+    flex-wrap: wrap;
   }
+  .dropzone.dropzone-compact { padding: 14px 18px; }
   .dropzone:hover { border-color: var(--accent); box-shadow: var(--shadow); transform: translateY(-1px); }
   .dropzone.dragover { border-color: var(--accent); border-style: solid; background: rgba(var(--accent-rgb),0.06); box-shadow: 0 0 0 4px rgba(var(--accent-rgb),0.12); }
   .dropzone-left { display: flex; align-items: center; gap: 14px; min-width: 0; }
@@ -233,6 +242,7 @@
     display: flex; align-items: center; justify-content: center; font-size: 17px;
     transition: transform .18s ease;
   }
+  .dropzone-compact .dropzone-icon { width: 34px; height: 34px; font-size: 14px; }
   .dropzone:hover .dropzone-icon { transform: scale(1.08); }
   .dropzone .hint { color: var(--muted); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
   .dropzone .hint.has-file { color: var(--text); font-weight: 600; }
@@ -252,7 +262,6 @@
   button:disabled { opacity: 0.5; cursor: not-allowed; transform: none !important; box-shadow: none !important; }
   .btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin: 14px 0; }
 
-  /* ---- Creative progress bar ---- */
   .progress-wrap { margin: 12px 0 6px; }
   .progress-row { display: flex; align-items: center; gap: 10px; }
   .progress-track {
@@ -301,7 +310,7 @@
   .log {
     background: var(--log-bg); color: var(--log-fg); font-family: Consolas, monospace;
     font-size: 12px; padding: 12px; border-radius: var(--radius-sm); height: 140px; overflow-y: auto;
-    white-space: pre-wrap; margin-bottom: 14px; box-shadow: var(--shadow); border: 1px solid var(--glass-border);
+    white-space: pre-wrap; box-shadow: var(--shadow); border: 1px solid var(--glass-border);
   }
   .log:empty::before { content: "Activity will appear here once you generate a file..."; opacity: 0.55; }
 
@@ -312,10 +321,19 @@
   table.preview th { background: var(--glass-bg); font-weight: 700; position: sticky; top: 0; color: var(--accent); }
   table.preview tbody tr:hover { background: rgba(var(--accent-rgb), 0.05); }
   .preview-scroll {
-    max-height: 260px; overflow: auto; border: 1px solid var(--border); border-radius: var(--radius);
-    margin-bottom: 20px; background: var(--card-bg); box-shadow: var(--shadow);
+    max-height: 520px; overflow: auto; border: 1px solid var(--border); border-radius: var(--radius);
+    margin-bottom: 10px; background: var(--card-bg); box-shadow: var(--shadow);
   }
   .preview-empty { padding: 26px 14px; text-align: center; color: var(--muted); font-size: 12.5px; }
+
+  .pagination { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; margin-bottom: 20px; }
+  .pagination-info { font-size: 11.5px; color: var(--muted); }
+  .pagination-nav { display: flex; gap: 4px; flex-wrap: wrap; }
+  .pagination-nav button { padding: 6px 11px; font-size: 12px; }
+  .pagination-nav button.active { background: linear-gradient(135deg, var(--accent), var(--accent-active)); color: #fff; border: none; }
+
+  .filter-bar { background: var(--glass-bg); border: 1px solid var(--glass-border); border-radius: var(--radius-sm); padding: 10px 12px; }
+  .filter-bar input[type=text] { flex: 1; min-width: 160px; }
 
   .card-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 14px; margin: 14px 0; }
   .card {
@@ -367,7 +385,6 @@
   }
   pre.about-text { white-space: pre-wrap; font-family: "Segoe UI", sans-serif; font-size: 12.5px; line-height: 1.65; }
 
-  /* ---- Marketplace multi-select dropdown ---- */
   .ms-dropdown { position: relative; min-width: 260px; }
   .ms-toggle {
     width: 100%; display: flex; align-items: center; justify-content: space-between; gap: 8px;
@@ -407,9 +424,7 @@
   .ms-chip button:hover { opacity: 1; background: rgba(var(--accent-rgb),0.15); }
 
   .ms-actions { display: flex; gap: 8px; margin-bottom: 8px; }
-  .ms-actions button {
-    flex: 1; padding: 6px 8px; font-size: 11.5px; border-radius: var(--radius-sm);
-  }
+  .ms-actions button { flex: 1; padding: 6px 8px; font-size: 11.5px; border-radius: var(--radius-sm); }
   .ms-options { display: flex; flex-direction: column; gap: 2px; }
   .ms-option {
     display: flex; align-items: center; gap: 9px; padding: 7px 8px; border-radius: var(--radius-sm);
@@ -420,7 +435,43 @@
   .ms-option span.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); opacity: 0; transition: opacity .12s ease; }
   .ms-option.checked span.dot { opacity: 1; }
 
-  /* ---- Micro tooltip ---- */
+  /* ---- Header "more" menu (Settings / About) ---- */
+  .menu-dropdown { position: relative; }
+  .menu-panel {
+    position: absolute; top: calc(100% + 8px); right: 0; min-width: 190px; z-index: 30;
+    background: var(--glass-bg); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--glass-border); border-radius: var(--radius); box-shadow: var(--shadow);
+    padding: 6px; opacity: 0; transform: translateY(-6px) scale(0.98); pointer-events: none;
+    transition: opacity .18s ease, transform .18s ease;
+  }
+  .menu-dropdown.open .menu-panel { opacity: 1; transform: translateY(0) scale(1); pointer-events: auto; }
+  .menu-item {
+    width: 100%; justify-content: flex-start; background: transparent; border: 1px solid transparent;
+    padding: 9px 10px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 600; color: var(--text);
+  }
+  .menu-item:hover { background: rgba(var(--accent-rgb),0.08); border-color: transparent; box-shadow: none; transform: none; }
+
+  /* ---- Log modal ---- */
+  .modal-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.45); backdrop-filter: blur(2px);
+    display: flex; align-items: center; justify-content: center; z-index: 100;
+    opacity: 0; pointer-events: none; transition: opacity .18s ease; padding: 20px;
+  }
+  .modal-overlay.open { opacity: 1; pointer-events: auto; }
+  .modal-box {
+    width: min(720px, 100%); max-height: 80vh; display: flex; flex-direction: column;
+    background: var(--card-bg); border: 1px solid var(--glass-border); border-radius: var(--radius);
+    box-shadow: var(--shadow); transform: translateY(10px) scale(0.98); transition: transform .18s ease; overflow: hidden;
+  }
+  .modal-overlay.open .modal-box { transform: translateY(0) scale(1); }
+  .modal-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border-bottom: 1px solid var(--border); }
+  .modal-title { font-weight: 700; font-size: 14px; color: var(--accent); display: flex; align-items: center; gap: 8px; }
+  .modal-close { padding: 6px 10px; }
+  .modal-log-content {
+    margin: 0; padding: 14px 16px; background: var(--log-bg); color: var(--log-fg);
+    font-family: Consolas, monospace; font-size: 12px; overflow: auto; white-space: pre-wrap; flex: 1;
+  }
+
   [data-tip] { position: relative; }
   [data-tip]:hover::after {
     content: attr(data-tip); position: absolute; bottom: calc(100% + 6px); left: 50%; transform: translateX(-50%);
@@ -430,11 +481,10 @@
   }
   @keyframes tipin { from { opacity: 0; transform: translateX(-50%) translateY(3px); } to { opacity: 1; transform: translateX(-50%) translateY(0); } }
 
-  /* ---- Responsive ---- */
   @media (max-width: 760px) {
     .banner-inner { padding: 16px 16px 14px; }
     .title { font-size: 22px; }
-    .container { padding: 16px 16px 40px; }
+    .container { padding: 16px 16px 48px; }
     .card-grid { grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); }
     .ms-dropdown { min-width: 0; width: 100%; }
     .tabs { gap: 2px; }
@@ -443,10 +493,12 @@
     .header-controls { width: 100%; justify-content: space-between; }
     .status-text { min-width: 70px; }
     table.preview { font-size: 10px; }
+    .menu-panel { right: auto; left: 0; }
   }
   @media (max-width: 480px) {
     .btn-row button { flex: 1 1 auto; }
     .progress-steps span { font-size: 9px; padding: 2px 6px; }
+    .pagination { flex-direction: column; align-items: flex-start; }
   }
 </style>
 </head>
@@ -482,54 +534,34 @@
           <option value="dark">Dark</option>
         </select>
       </div>
+      <div class="menu-dropdown" id="menuDropdown">
+        <button type="button" class="sound-quick-toggle" id="menuToggle" data-tip="Settings & About">
+          <i class="fa-solid fa-ellipsis-vertical" style="font-size:12px;"></i><span>Menu</span>
+        </button>
+        <div class="menu-panel" id="menuPanel">
+          <button type="button" class="menu-item" data-tab="settings"><i class="fa-solid fa-gear"></i> Settings</button>
+          <button type="button" class="menu-item" data-tab="about"><i class="fa-regular fa-circle-question"></i> About</button>
+        </div>
+      </div>
     </div>
   </div>
 </div>
 
 <div class="container">
   <div class="tabs">
-    <button class="tab-btn active" data-tab="dashboard"><i class="fa-solid fa-gauge-high"></i> Dashboard</button>
-    <button class="tab-btn" data-tab="sales"><i class="fa-solid fa-cart-shopping"></i> Sales Upload</button>
-    <button class="tab-btn" data-tab="return"><i class="fa-solid fa-rotate-left"></i> Return Upload</button>
-    <button class="tab-btn" data-tab="settings"><i class="fa-solid fa-gear"></i> Settings</button>
-    <button class="tab-btn" data-tab="about"><i class="fa-regular fa-circle-question"></i> About</button>
-  </div>
-
-  <!-- ==================== DASHBOARD TAB ==================== -->
-  <div class="tab-panel active" id="tab-dashboard">
-    <div class="section-label"><i class="fa-solid fa-gauge-high"></i> Dashboard &mdash; Input vs Output</div>
-    <div class="card-grid">
-      <div class="card"><div class="card-icon"><i class="fa-solid fa-file-import"></i></div><div class="label">Input Qty</div><div class="value" id="dashInputQty">-</div></div>
-      <div class="card"><div class="card-icon"><i class="fa-solid fa-file-export"></i></div><div class="label">Output Qty</div><div class="value" id="dashOutputQty">-</div></div>
-      <div class="card"><div class="card-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div><div class="label">Input Value</div><div class="value" id="dashInputValue">-</div></div>
-      <div class="card"><div class="card-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div><div class="label">Output Value</div><div class="value" id="dashOutputValue">-</div></div>
-      <div class="card"><div class="card-icon"><i class="fa-solid fa-cart-shopping"></i></div><div class="label">Last Sales Run</div><div class="value" id="dashLastSales" style="font-size:15px">-</div></div>
-      <div class="card"><div class="card-icon"><i class="fa-solid fa-rotate-left"></i></div><div class="label">Last Return Run</div><div class="value" id="dashLastReturn" style="font-size:15px">-</div></div>
-      <div class="card"><div class="card-icon"><i class="fa-solid fa-clock-rotate-left"></i></div><div class="label">Sales History Entries</div><div class="value" id="dashHistoryCount" style="font-size:15px">0</div></div>
-    </div>
-    <div class="match-indicator neutral" id="dashMatchIndicator"></div>
-    <div class="muted">Sales value based on 'Total Price' / 'ORD_TOT' (to be confirmed).</div>
-
-    <div class="reminder-box">
-      <div class="reminder-icon"><i class="fa-solid fa-lightbulb"></i></div>
-      <div>
-        <b>Reminder &mdash; how RP Code works for Returns:</b> every time you run a Sales Upload in this browser,
-        the tool remembers each order/SKU's Shipping Package Code. When you later process a Return, it looks up
-        RP Code from that memory by matching Sale Order Number + Product SKU Code. If a return's order was never
-        seen in a Sales run <i>on this browser</i>, RP Code is left blank &mdash; it is never guessed.
-        Sales history is stored in this browser only (not shared automatically across computers) &mdash;
-        use <b>Export / Import History</b> under Settings to move it between machines.
-      </div>
+    <div class="tabs-left">
+      <button class="tab-btn active" data-tab="sales"><i class="fa-solid fa-cart-shopping"></i> Sales Upload</button>
+      <button class="tab-btn" data-tab="return"><i class="fa-solid fa-rotate-left"></i> Return Upload</button>
     </div>
   </div>
 
   <!-- ==================== SALES TAB ==================== -->
-  <div class="tab-panel" id="tab-sales">
+  <div class="tab-panel active" id="tab-sales">
     <div class="section-label"><i class="fa-solid fa-cart-shopping"></i> Sales Upload</div>
     <div class="muted">Generates the SAP sales upload using the built-in Unicommerce to SAP header mapping.</div>
 
     <div class="field-row">
-      <label class="field-label" id="salesMarketplaceLabel"><i class="fa-solid fa-store"></i> MARKETPLACE FILTER</label>
+      <label class="field-label"><i class="fa-solid fa-store"></i> MARKETPLACE FILTER</label>
       <div class="ms-dropdown" id="marketplaceDropdown">
         <button type="button" class="ms-toggle" id="marketplaceToggle" aria-haspopup="listbox" aria-expanded="false">
           <span class="ms-toggle-left"><i class="fa-solid fa-tags"></i><span class="ms-toggle-text" id="marketplaceToggleText">All marketplaces</span></span>
@@ -566,6 +598,7 @@
     <div class="btn-row">
       <button class="primary" id="salesGenerateBtn"><i class="fa-solid fa-play"></i> Generate SAP Upload File</button>
       <button id="salesDownloadBtn" disabled><i class="fa-solid fa-download"></i> Download SAP Upload File</button>
+      <button id="salesViewLogBtn" type="button"><i class="fa-solid fa-terminal"></i> View Log</button>
       <button id="salesClearBtn"><i class="fa-solid fa-broom"></i> Clear / Reset</button>
     </div>
 
@@ -579,19 +612,83 @@
       </div>
     </div>
 
-    <div class="section-label"><i class="fa-solid fa-terminal"></i> Activity Log</div>
-    <div class="log" id="salesLog"></div>
+    <div class="log" id="salesLog" style="display:none;"></div>
 
-    <div class="section-label"><i class="fa-solid fa-table"></i> Output Preview (first 100 rows)</div>
+    <div class="section-label"><i class="fa-solid fa-chart-simple"></i> Results</div>
+    <div class="card-grid" id="salesResultsGrid">
+      <div class="card"><div class="card-icon"><i class="fa-solid fa-file-import"></i></div><div class="label">Input Qty</div><div class="value" id="salesInputQty">-</div></div>
+      <div class="card"><div class="card-icon"><i class="fa-solid fa-file-export"></i></div><div class="label">Output Qty</div><div class="value" id="salesOutputQty">-</div></div>
+      <div class="card"><div class="card-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div><div class="label">Input Value</div><div class="value" id="salesInputValue">-</div></div>
+      <div class="card"><div class="card-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div><div class="label">Output Value</div><div class="value" id="salesOutputValue">-</div></div>
+    </div>
+    <div class="match-indicator neutral" id="salesMatchIndicator"></div>
+    <div class="muted" id="salesLastRun"></div>
+
+    <div class="field-row">
+      <label class="field-label"><i class="fa-solid fa-store"></i> VIEW BY MARKETPLACE</label>
+      <select id="salesBreakdownSelect"><option value="__all__">All marketplaces (total)</option></select>
+    </div>
+    <div class="card-grid" id="salesBreakdownGrid" style="display:none;">
+      <div class="card"><div class="card-icon"><i class="fa-solid fa-hashtag"></i></div><div class="label">Qty</div><div class="value" id="salesBreakdownQty">-</div></div>
+      <div class="card"><div class="card-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div><div class="label">Input Value</div><div class="value" id="salesBreakdownInputValue">-</div></div>
+      <div class="card"><div class="card-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div><div class="label">Output Value</div><div class="value" id="salesBreakdownOutputValue">-</div></div>
+    </div>
+
+    <div class="section-label"><i class="fa-solid fa-table"></i> Output Preview</div>
+    <div class="field-row filter-bar">
+      <label class="field-label"><i class="fa-solid fa-filter"></i> FILTER</label>
+      <select id="salesFilterColumn"></select>
+      <input type="text" id="salesFilterValue" placeholder="Type to filter rows...">
+      <button id="salesFilterClearBtn" type="button"><i class="fa-solid fa-xmark"></i> Clear</button>
+    </div>
     <div class="preview-scroll"><table class="preview" id="salesPreviewTable"></table></div>
+    <div class="pagination" id="salesPagination"></div>
   </div>
 
   <!-- ==================== RETURN TAB ==================== -->
   <div class="tab-panel" id="tab-return">
     <div class="section-label"><i class="fa-solid fa-rotate-left"></i> Return Upload</div>
-    <div class="muted">Total = raw Total &minus; Other charges; Unit Price = raw Total / Qty; RP Code is looked up from Sales history.</div>
+    <div class="muted">
+      Total = raw Total &minus; Other charges; Unit Price = raw Total / Qty; RP Code is looked up from Sales history.
+      <button type="button" class="info-toggle-btn" id="rpInfoToggleBtn" data-tip="How RP Code works" aria-expanded="false">
+        <i class="fa-solid fa-circle-info"></i> How RP Code works
+      </button>
+    </div>
+    <div class="reminder-box" id="rpInfoBox" style="display:none;">
+      <div class="reminder-icon"><i class="fa-solid fa-lightbulb"></i></div>
+      <div>
+        <b>How RP Code works:</b> every time a Sales Upload is processed in this browser (either from the Sales tab,
+        or via the optional Sales file import below), the tool remembers each order/SKU's Shipping Package Code.
+        When you process a Return, it looks up RP Code by matching Sale Order Number + Product SKU Code. If a
+        return's order was never seen in a Sales run <i>on this browser</i>, RP Code is left blank &mdash; never guessed.
+        History is stored in this browser only &mdash; use Export/Import History under the menu's Settings to move it
+        between machines.
+      </div>
+    </div>
 
-    <div class="field-row">
+    <div class="section-label"><i class="fa-solid fa-clock-rotate-left"></i> Optional &mdash; Import Sales File for RP Code <span class="badge-optional">Optional</span></div>
+    <div class="muted">Only processing Returns today? Drop the matching Sales dump here just to capture RP Code history &mdash; no Sales output file is generated from it.</div>
+    <div class="dropzone dropzone-compact" id="returnSalesDropzone">
+      <div class="dropzone-left">
+        <div class="dropzone-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+        <div>
+          <span class="hint" id="returnSalesHint">Drag &amp; drop a Sales dump here, or click to browse</span>
+          <div class="dropzone-sub">Accepts .csv, .xlsx, .xls, .xltx, .xlsm</div>
+        </div>
+      </div>
+      <button id="returnSalesBrowseBtn" type="button"><i class="fa-solid fa-folder-open"></i> Browse...</button>
+      <input type="file" id="returnSalesFileInput" accept=".csv,.xlsx,.xls,.xltx,.xlsm" style="display:none;">
+    </div>
+    <div class="field-row" id="returnSalesSheetRow" style="display:none;">
+      <label class="field-label"><i class="fa-solid fa-table-list"></i> SHEET</label>
+      <select id="returnSalesSheetSelect"></select>
+    </div>
+    <div class="btn-row">
+      <button id="returnSalesImportBtn" type="button"><i class="fa-solid fa-database"></i> Capture RP Code History</button>
+    </div>
+    <div class="muted" id="returnSalesImportStatus"></div>
+
+    <div class="field-row" style="margin-top:18px;">
       <label class="field-label"><i class="fa-solid fa-store"></i> MARKETPLACE FILTER</label>
       <div class="ms-dropdown" id="returnMarketplaceDropdown">
         <button type="button" class="ms-toggle" id="returnMarketplaceToggle" aria-haspopup="listbox" aria-expanded="false">
@@ -608,7 +705,7 @@
         </div>
       </div>
     </div>
-    <div class="muted" style="margin-top:-2px;">Filters by marketplace using the same order-number pattern matching as Sales, applied to "Sale Order Number".</div>
+    <div class="muted" style="margin-top:-2px;">Filters using the same order-number pattern matching as Sales, applied to "Sale Order Number".</div>
 
     <div class="section-label" style="margin-top:14px;"><i class="fa-solid fa-file-arrow-up"></i> Today's Return Dump File (.csv or .xlsx)</div>
     <div class="dropzone" id="returnDropzone">
@@ -630,6 +727,7 @@
     <div class="btn-row">
       <button class="primary" id="returnGenerateBtn"><i class="fa-solid fa-play"></i> Generate Return SAP Upload File</button>
       <button id="returnDownloadBtn" disabled><i class="fa-solid fa-download"></i> Download Return SAP Upload File</button>
+      <button id="returnViewLogBtn" type="button"><i class="fa-solid fa-terminal"></i> View Log</button>
       <button id="returnClearBtn"><i class="fa-solid fa-broom"></i> Clear / Reset</button>
     </div>
 
@@ -643,11 +741,37 @@
       </div>
     </div>
 
-    <div class="section-label"><i class="fa-solid fa-terminal"></i> Activity Log</div>
-    <div class="log" id="returnLog"></div>
+    <div class="log" id="returnLog" style="display:none;"></div>
 
-    <div class="section-label"><i class="fa-solid fa-table"></i> Output Preview (first 100 rows)</div>
+    <div class="section-label"><i class="fa-solid fa-chart-simple"></i> Results</div>
+    <div class="card-grid" id="returnResultsGrid">
+      <div class="card"><div class="card-icon"><i class="fa-solid fa-file-import"></i></div><div class="label">Input Qty</div><div class="value" id="returnInputQty">-</div></div>
+      <div class="card"><div class="card-icon"><i class="fa-solid fa-file-export"></i></div><div class="label">Output Qty</div><div class="value" id="returnOutputQty">-</div></div>
+      <div class="card"><div class="card-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div><div class="label">Input Value</div><div class="value" id="returnInputValue">-</div></div>
+      <div class="card"><div class="card-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div><div class="label">Output Value</div><div class="value" id="returnOutputValue">-</div></div>
+    </div>
+    <div class="match-indicator neutral" id="returnMatchIndicator"></div>
+    <div class="muted" id="returnLastRun"></div>
+
+    <div class="field-row">
+      <label class="field-label"><i class="fa-solid fa-store"></i> VIEW BY MARKETPLACE</label>
+      <select id="returnBreakdownSelect"><option value="__all__">All marketplaces (total)</option></select>
+    </div>
+    <div class="card-grid" id="returnBreakdownGrid" style="display:none;">
+      <div class="card"><div class="card-icon"><i class="fa-solid fa-hashtag"></i></div><div class="label">Qty</div><div class="value" id="returnBreakdownQty">-</div></div>
+      <div class="card"><div class="card-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div><div class="label">Input Value</div><div class="value" id="returnBreakdownInputValue">-</div></div>
+      <div class="card"><div class="card-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div><div class="label">Output Value</div><div class="value" id="returnBreakdownOutputValue">-</div></div>
+    </div>
+
+    <div class="section-label"><i class="fa-solid fa-table"></i> Output Preview</div>
+    <div class="field-row filter-bar">
+      <label class="field-label"><i class="fa-solid fa-filter"></i> FILTER</label>
+      <select id="returnFilterColumn"></select>
+      <input type="text" id="returnFilterValue" placeholder="Type to filter rows...">
+      <button id="returnFilterClearBtn" type="button"><i class="fa-solid fa-xmark"></i> Clear</button>
+    </div>
     <div class="preview-scroll"><table class="preview" id="returnPreviewTable"></table></div>
+    <div class="pagination" id="returnPagination"></div>
   </div>
 
   <!-- ==================== SETTINGS TAB ==================== -->
@@ -680,6 +804,16 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="logModalOverlay">
+  <div class="modal-box">
+    <div class="modal-header">
+      <div class="modal-title" id="logModalTitle"><i class="fa-solid fa-terminal"></i> Activity Log</div>
+      <button type="button" class="modal-close" id="logModalCloseBtn"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <pre class="modal-log-content" id="logModalContent"></pre>
+  </div>
+</div>
+
 <script>
 // ============================================================================
 // UC to SAP Order Upload Mapper - Core Logic (no DOM dependencies)
@@ -707,18 +841,18 @@ const MAPPING_DATA = [
   ["ORD_COD_CRG", "COD Service Charges"],
   ["ORD_TOT", "Total Price"],
   ["SPACK_STATUS", "Shipping Package Status Code"],
-  ["SPACK_SORDER", "Sale Order Code"],
-  ["SPACK_TYPE", "Shipping Method"],
+  ["SPACK_SORDER", "Shipping Package Code"],
+  ["SPACK_TYPE", "Shipping Package Type"],
   ["PAYMENT_GATEWAY", "Gateway"],
   ["CUSTOMER_GSTIN", null],
   ["ORIG_INVOICE", "Invoice Code"],
   ["FACILITY", "Facility"],
   ["AWB_NUMBER", "Tracking Number"],
   ["DISPATCH_DATE", "Dispatch Date"],
-  ["SALES_ORD_ITEM_CODE", null],
+  ["SALES_ORD_ITEM_CODE", "Sale Order Item Code"],
   ["SHP_ADR_STATE", "Shipping Address State"],
   ["CITY", "Shipping Address City"],
-  ["SHP_METHOD", null],
+  ["SHP_METHOD", "Shipping Method"],
   ["CHARG", "Batch Code"],
   ["VEN_BATCH_NUM", "Vendor Batch Number"],
   ["CURRENCY", "Currency"],
@@ -1099,7 +1233,7 @@ function buildReturnOutputRows(headerIndex, dataRows, salesHistory) {
 }
 
 // ============================================================================
-// UI wiring - depends on core_logic.js being loaded first
+// UI wiring - depends on core logic above being loaded first
 // ============================================================================
 
 const LS_THEME = "uc_sap_theme";
@@ -1135,12 +1269,14 @@ function mergeHistory(updates) {
   return changed;
 }
 
+function updateHistoryStatus() {
+  const count = Object.keys(loadHistory()).length;
+  const el = document.getElementById("historyStatus");
+  if (el) el.textContent = `${count} order/SKU entries stored in this browser.`;
+}
+
 // ---- Sound (Web Audio API - no external files needed) ---------------------
-// Subtle, short click/feedback sounds. Lazily created on first user gesture
-// to respect browser autoplay restrictions. Toggle persists during the session
-// (and across sessions via localStorage, same as before).
 let audioCtx = null;
-let audioUnlocked = false;
 function ensureAudio() {
   if (!audioCtx) {
     try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; }
@@ -1151,7 +1287,6 @@ function ensureAudio() {
   return audioCtx;
 }
 document.addEventListener("click", function unlockOnce() {
-  audioUnlocked = true;
   ensureAudio();
   document.removeEventListener("click", unlockOnce);
 }, { once: true });
@@ -1178,8 +1313,6 @@ function beep(freq, durationMs, type) {
   } catch (e) { /* ignore - some browsers block audio until user interaction */ }
 }
 
-// Debounce identical rapid-fire sounds (e.g. during animation loops) so the
-// app never becomes noisy/annoying even if a caller fires the same event twice.
 let lastSoundAt = {};
 function playSound(event) {
   const now = Date.now();
@@ -1198,28 +1331,56 @@ function playSound(event) {
   else if (event === "upload") beep(600, 70);
 }
 
+// ---- Durable preference storage --------------------------------------------
+// localStorage alone can appear to "reset" inside a sandboxed preview iframe
+// (it doesn't reliably survive the artifact being re-opened there), even
+// though it works fine once the file is downloaded and opened directly in a
+// real browser. window.storage (when available, i.e. inside Claude's artifact
+// environment) is backed by durable per-user storage and survives re-opens,
+// so it's used as the primary store for small preferences like theme/sound,
+// with localStorage kept as an instant-read fallback/cache.
+async function storageGet(key) {
+  if (!window.storage) return null;
+  try {
+    const res = await window.storage.get(key, false);
+    return res ? res.value : null;
+  } catch (e) {
+    return null;
+  }
+}
+function storageSet(key, value) {
+  if (!window.storage) return;
+  window.storage.set(key, value, false).catch(() => {});
+}
+
 // ---- Theme ------------------------------------------------------------------
 function applyTheme(name, opts = {}) {
   document.documentElement.classList.add("theme-transition");
   document.documentElement.setAttribute("data-theme", name === "navy" ? "" : name);
   document.getElementById("themeSelect").value = name;
   localStorage.setItem(LS_THEME, name);
+  if (!opts.silent) storageSet("theme", name);
   if (!opts.silent) playSound("theme");
   window.clearTimeout(applyTheme._t);
   applyTheme._t = window.setTimeout(() => document.documentElement.classList.remove("theme-transition"), 400);
 }
 document.getElementById("themeSelect").addEventListener("change", (e) => applyTheme(e.target.value));
-applyTheme(localStorage.getItem(LS_THEME) || "navy", { silent: true });
 
-// ---- Sound toggle persistence (Settings tab checkbox is the source of truth,
-// the header quick toggle mirrors and controls the same state) ----
+(async function initTheme() {
+  const remote = await storageGet("theme");
+  const saved = remote || localStorage.getItem(LS_THEME) || "navy";
+  applyTheme(saved, { silent: true });
+  if (remote) localStorage.setItem(LS_THEME, remote); // keep local cache in sync
+})();
+
+// ---- Sound toggle persistence ----
 const soundToggleEl = document.getElementById("soundToggle");
 const soundQuickToggleEl = document.getElementById("soundQuickToggle");
 const soundQuickLabelEl = document.getElementById("soundQuickLabel");
+const soundQuickIconEl = document.getElementById("soundQuickIcon");
 
 soundToggleEl.checked = localStorage.getItem(LS_SOUND) !== "false";
 
-const soundQuickIconEl = document.getElementById("soundQuickIcon");
 function syncSoundUI() {
   soundQuickToggleEl.classList.toggle("on", soundToggleEl.checked);
   soundQuickLabelEl.textContent = soundToggleEl.checked ? "Sound On" : "Sound Off";
@@ -1231,6 +1392,7 @@ syncSoundUI();
 
 soundToggleEl.addEventListener("change", () => {
   localStorage.setItem(LS_SOUND, soundToggleEl.checked ? "true" : "false");
+  storageSet("sound_on", soundToggleEl.checked ? "true" : "false");
   syncSoundUI();
   if (soundToggleEl.checked) beep(700, 50);
 });
@@ -1239,37 +1401,74 @@ soundQuickToggleEl.addEventListener("click", () => {
   soundToggleEl.dispatchEvent(new Event("change"));
 });
 
-// ---- Tabs ---------------------------------------------------------------------
-document.querySelectorAll(".tab-btn").forEach((btn) => {
-  btn.addEventListener("click", () => {
-    playSound("click");
-    document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
-    document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
-    btn.classList.add("active");
-    document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
-    if (btn.dataset.tab === "dashboard") refreshDashboard();
-  });
+(async function initSound() {
+  const remote = await storageGet("sound_on");
+  if (remote !== null && remote !== undefined) {
+    soundToggleEl.checked = remote !== "false";
+    localStorage.setItem(LS_SOUND, remote);
+    syncSoundUI();
+  }
+})();
+
+// ---- Panel switching (Sales / Return tabs + Settings / About via menu) ----
+function activatePanel(name) {
+  document.querySelectorAll(".tab-panel").forEach((p) => p.classList.remove("active"));
+  const panel = document.getElementById("tab-" + name);
+  if (panel) panel.classList.add("active");
+  document.querySelectorAll(".tabs .tab-btn").forEach((b) => b.classList.toggle("active", b.dataset.tab === name));
+  playSound("click");
+}
+document.querySelectorAll(".tabs .tab-btn").forEach((btn) => {
+  btn.addEventListener("click", () => activatePanel(btn.dataset.tab));
 });
 
-// ---- Dashboard state ------------------------------------------------------
-const dash = {
-  inputQty: null, outputQty: null, inputValue: null, outputValue: null,
-  lastSalesRun: null, lastReturnRun: null,
-};
+// ---- Header "more" menu (Settings / About) ----
+(function menuInit() {
+  const dropdown = document.getElementById("menuDropdown");
+  const toggle = document.getElementById("menuToggle");
+  const panel = document.getElementById("menuPanel");
+  function open() { dropdown.classList.add("open"); playSound("open"); }
+  function close() {
+    if (!dropdown.classList.contains("open")) return;
+    dropdown.classList.remove("open");
+    playSound("close");
+  }
+  toggle.addEventListener("click", (e) => {
+    e.stopPropagation();
+    dropdown.classList.contains("open") ? close() : open();
+  });
+  panel.addEventListener("click", (e) => e.stopPropagation());
+  document.addEventListener("click", (e) => { if (!dropdown.contains(e.target)) close(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+  panel.querySelectorAll(".menu-item").forEach((btn) => {
+    btn.addEventListener("click", () => { activatePanel(btn.dataset.tab); close(); });
+  });
+})();
 
-function refreshDashboard() {
-  document.getElementById("dashInputQty").textContent = dash.inputQty ?? "-";
-  document.getElementById("dashOutputQty").textContent = dash.outputQty ?? "-";
-  document.getElementById("dashInputValue").textContent = dash.inputValue != null ? dash.inputValue.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "-";
-  document.getElementById("dashOutputValue").textContent = dash.outputValue != null ? dash.outputValue.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "-";
-  document.getElementById("dashLastSales").textContent = dash.lastSalesRun ? dash.lastSalesRun.toLocaleTimeString() : "-";
-  document.getElementById("dashLastReturn").textContent = dash.lastReturnRun ? dash.lastReturnRun.toLocaleTimeString() : "-";
-  document.getElementById("dashHistoryCount").textContent = Object.keys(loadHistory()).length;
-  document.getElementById("historyStatus").textContent = `${Object.keys(loadHistory()).length} order/SKU entries stored in this browser.`;
-}
+// ---- Log modal ----
+(function logModalInit() {
+  const overlay = document.getElementById("logModalOverlay");
+  const titleEl = document.getElementById("logModalTitle");
+  const contentEl = document.getElementById("logModalContent");
+  const closeBtn = document.getElementById("logModalCloseBtn");
 
-function updateMatchIndicator(inputQty, outputQty, inputValue, outputValue, opts = {}) {
-  const el = document.getElementById("dashMatchIndicator");
+  window.openLogModal = function (title, text) {
+    titleEl.innerHTML = `<i class="fa-solid fa-terminal"></i> ${title}`;
+    contentEl.textContent = text && text.trim() ? text : "(no activity yet)";
+    overlay.classList.add("open");
+    playSound("open");
+  };
+  function close() {
+    overlay.classList.remove("open");
+    playSound("close");
+  }
+  closeBtn.addEventListener("click", close);
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) close(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+})();
+
+// ---- Result stat cards (per-tab; replaces the old global Dashboard) --------
+function updateMatchIndicator(el, inputQty, outputQty, inputValue, outputValue, opts = {}) {
   const qtyMatch = inputQty === outputQty || opts.qtyFiltered;
 
   if (opts.qtyFiltered) {
@@ -1298,6 +1497,48 @@ function updateMatchIndicator(inputQty, outputQty, inputValue, outputValue, opts
     el.textContent = "Mismatch - check warnings in the log";
     el.className = "match-indicator warn";
   }
+}
+
+function formatMoney(v) {
+  return v != null ? v.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "-";
+}
+
+// Computes per-marketplace subtotals for the "view by marketplace" breakdown.
+// Uses the same detectChannel() classification as the marketplace filter, so
+// numbers here always agree with what the multi-select would show/filter.
+function computeChannelBreakdown(headerIndex, dataRows, outputRows, orderIdCol, inputValueColName, outputValueIndex) {
+  const idx = headerIndex[norm(orderIdCol)];
+  const valIdx = headerIndex[norm(inputValueColName)];
+  const map = {};
+  dataRows.forEach((row, i) => {
+    const channel = idx !== undefined ? detectChannel(row[idx]) : "Unknown";
+    if (!map[channel]) map[channel] = { qty: 0, inputValue: 0, outputValue: 0 };
+    map[channel].qty += 1;
+    map[channel].inputValue += valIdx !== undefined ? toNumber(row[valIdx]) : 0;
+    const outRow = outputRows[i];
+    if (outRow) map[channel].outputValue += toNumber(outRow[outputValueIndex]);
+  });
+  return map;
+}
+
+function renderBreakdownSelect(selectEl, breakdownMap) {
+  const channels = Object.keys(breakdownMap).sort();
+  const current = selectEl.value;
+  selectEl.innerHTML = '<option value="__all__">All marketplaces (total)</option>' +
+    channels.map((c) => `<option value="${c}">${c}</option>`).join("");
+  selectEl.value = channels.includes(current) ? current : "__all__";
+}
+
+function updateBreakdownCards(breakdownMap, selectedValue, gridEl, qtyEl, inValEl, outValEl) {
+  if (selectedValue === "__all__" || !breakdownMap[selectedValue]) {
+    gridEl.style.display = "none";
+    return;
+  }
+  gridEl.style.display = "";
+  const b = breakdownMap[selectedValue];
+  qtyEl.textContent = b.qty;
+  inValEl.textContent = formatMoney(b.inputValue);
+  outValEl.textContent = formatMoney(b.outputValue);
 }
 
 // ---- File reading (CSV or Excel via SheetJS) -------------------------------
@@ -1366,7 +1607,7 @@ function downloadXLSX(filename, headers, rows) {
   XLSX.writeFile(wb, filename);
 }
 
-// ---- Preview table rendering -----------------------------------------------
+// ---- Preview table rendering (renders one already-paginated slice of rows) -
 function renderPreviewTable(tableEl, headers, rows, limit = 100) {
   tableEl.innerHTML = "";
   if (!rows.length) {
@@ -1398,6 +1639,116 @@ function renderPreviewTable(tableEl, headers, rows, limit = 100) {
     tbody.appendChild(tr);
   });
   tableEl.appendChild(tbody);
+}
+
+// ---- Pagination controls ("page 1 2 3 ... next/prev") ----------------------
+function renderPagination(el, currentPage, totalPages, totalRows, pageSize, onGoTo) {
+  el.innerHTML = "";
+  if (totalRows === 0) return;
+
+  const info = document.createElement("div");
+  info.className = "pagination-info";
+  const startRow = (currentPage - 1) * pageSize + 1;
+  const endRow = Math.min(currentPage * pageSize, totalRows);
+  info.textContent = `Showing ${startRow}-${endRow} of ${totalRows} rows`;
+  el.appendChild(info);
+
+  if (totalPages <= 1) return;
+
+  const nav = document.createElement("div");
+  nav.className = "pagination-nav";
+
+  function pageBtn(label, page, opts = {}) {
+    const b = document.createElement("button");
+    b.type = "button";
+    b.textContent = label;
+    if (opts.active) b.classList.add("active");
+    if (opts.disabled) b.disabled = true;
+    b.addEventListener("click", () => { playSound("click"); onGoTo(page); });
+    return b;
+  }
+
+  nav.appendChild(pageBtn("\u00ab First", 1, { disabled: currentPage === 1 }));
+  nav.appendChild(pageBtn("\u2039 Prev", currentPage - 1, { disabled: currentPage === 1 }));
+
+  const windowSize = 5;
+  let start = Math.max(1, currentPage - Math.floor(windowSize / 2));
+  let end = Math.min(totalPages, start + windowSize - 1);
+  start = Math.max(1, end - windowSize + 1);
+  for (let p = start; p <= end; p++) {
+    nav.appendChild(pageBtn(String(p), p, { active: p === currentPage }));
+  }
+
+  nav.appendChild(pageBtn("Next \u203a", currentPage + 1, { disabled: currentPage === totalPages }));
+  nav.appendChild(pageBtn("Last \u00bb", totalPages, { disabled: currentPage === totalPages }));
+
+  el.appendChild(nav);
+}
+
+// Wraps a full result set with client-side pagination + column filtering for
+// the on-screen preview only. The downloaded file always contains the full
+// generated output regardless of any preview filter/page.
+function createPaginatedTable(tableEl, paginationEl, pageSize) {
+  let headers = [];
+  let allRows = [];
+  let filteredRows = [];
+  let currentPage = 1;
+
+  function setData(newHeaders, newRows) {
+    headers = newHeaders;
+    allRows = newRows;
+    filteredRows = newRows;
+    currentPage = 1;
+    draw();
+  }
+  function applyFilter(colIndex, query) {
+    const q = String(query || "").trim().toLowerCase();
+    if (!q) {
+      filteredRows = allRows;
+    } else if (colIndex === -1) {
+      filteredRows = allRows.filter((r) => r.some((v) => String(v == null ? "" : v).toLowerCase().includes(q)));
+    } else {
+      filteredRows = allRows.filter((r) => String(r[colIndex] == null ? "" : r[colIndex]).toLowerCase().includes(q));
+    }
+    currentPage = 1;
+    draw();
+  }
+  function goTo(page) { currentPage = page; draw(); }
+  function draw() {
+    const totalPages = Math.max(1, Math.ceil(filteredRows.length / pageSize));
+    if (currentPage > totalPages) currentPage = totalPages;
+    if (currentPage < 1) currentPage = 1;
+    const start = (currentPage - 1) * pageSize;
+    const pageRows = filteredRows.slice(start, start + pageSize);
+    renderPreviewTable(tableEl, headers, pageRows, pageSize);
+    renderPagination(paginationEl, currentPage, totalPages, filteredRows.length, pageSize, goTo);
+  }
+  function clear() {
+    headers = []; allRows = []; filteredRows = []; currentPage = 1;
+    tableEl.innerHTML = "";
+    const prevEmpty = tableEl.parentElement.querySelector(".preview-empty");
+    if (prevEmpty) prevEmpty.remove();
+    paginationEl.innerHTML = "";
+  }
+
+  return { setData, applyFilter, clear };
+}
+
+function wireFilterBar(colSelectEl, valueInputEl, clearBtnEl, headers, paginatedTable) {
+  colSelectEl.innerHTML = '<option value="-1">All columns</option>' +
+    headers.map((h, i) => `<option value="${i}">${h}</option>`).join("");
+  function apply() {
+    const idx = parseInt(colSelectEl.value, 10);
+    paginatedTable.applyFilter(idx, valueInputEl.value);
+  }
+  colSelectEl.addEventListener("change", apply);
+  valueInputEl.addEventListener("input", apply);
+  clearBtnEl.addEventListener("click", () => {
+    valueInputEl.value = "";
+    colSelectEl.value = "-1";
+    apply();
+    playSound("click");
+  });
 }
 
 // ---- Generic drop zone wiring -----------------------------------------------
@@ -1446,10 +1797,6 @@ function stepIndexForPercent(pct) {
   return 0;
 }
 
-// This remains connected to the app's real processing progress: every call site
-// below corresponds to an actual synchronous stage of file reading / mapping /
-// building rows / history reconciliation that has just completed - percentages
-// are not simulated independently of real work.
 function setProgress(wrapEl, fillEl, statusEl, stepsEl, pct, label) {
   fillEl.style.width = pct + "%";
   statusEl.textContent = label || pct + "%";
@@ -1462,11 +1809,7 @@ function setProgress(wrapEl, fillEl, statusEl, stepsEl, pct, label) {
       el.classList.toggle("done", i < idx || pct >= 100);
     });
   }
-  if (pct >= 100) {
-    wrapEl.classList.add("progress-complete");
-  } else {
-    wrapEl.classList.remove("progress-complete");
-  }
+  wrapEl.classList.toggle("progress-complete", pct >= 100);
 }
 
 function resetProgress(wrapEl, fillEl, statusEl, stepsEl) {
@@ -1474,9 +1817,7 @@ function resetProgress(wrapEl, fillEl, statusEl, stepsEl) {
   fillEl.style.width = "0%";
   statusEl.textContent = "Ready";
   statusEl.classList.remove("complete", "errored");
-  if (stepsEl) {
-    Array.from(stepsEl.children).forEach((el) => { el.classList.remove("active", "done"); });
-  }
+  if (stepsEl) Array.from(stepsEl.children).forEach((el) => el.classList.remove("active", "done"));
 }
 
 function setProgressError(statusEl) {
@@ -1485,8 +1826,6 @@ function setProgressError(statusEl) {
   statusEl.classList.add("errored");
 }
 
-// Yields control back to the browser so the progress bar/log actually repaint
-// during a long synchronous loop, instead of freezing until it's all done.
 function yieldToUI() {
   return new Promise((resolve) => setTimeout(resolve, 0));
 }
@@ -1499,7 +1838,7 @@ function yieldToUI() {
 const MARKETPLACES = ["Amazon", "Flipkart", "JioMart", "Kesh-King", "Zandu Care", "Kiosk", "Dpanda", "Other"];
 
 function createMarketplaceMultiSelect(ids) {
-  const selected = new Set(); // empty set == "All marketplaces" (no filter), same as legacy "All" option
+  const selected = new Set();
   const dropdown = document.getElementById(ids.dropdown);
   const toggle = document.getElementById(ids.toggle);
   const toggleText = document.getElementById(ids.toggleText);
@@ -1562,13 +1901,8 @@ function createMarketplaceMultiSelect(ids) {
       opt.appendChild(dot);
 
       opt.addEventListener("click", () => {
-        if (selected.has(name)) {
-          selected.delete(name);
-          playSound("uncheck");
-        } else {
-          selected.add(name);
-          playSound("check");
-        }
+        if (selected.has(name)) { selected.delete(name); playSound("uncheck"); }
+        else { selected.add(name); playSound("check"); }
         render();
       });
 
@@ -1576,11 +1910,7 @@ function createMarketplaceMultiSelect(ids) {
     });
   }
 
-  function openPanel() {
-    dropdown.classList.add("open");
-    toggle.setAttribute("aria-expanded", "true");
-    playSound("open");
-  }
+  function openPanel() { dropdown.classList.add("open"); toggle.setAttribute("aria-expanded", "true"); playSound("open"); }
   function closePanel() {
     if (!dropdown.classList.contains("open")) return;
     dropdown.classList.remove("open");
@@ -1605,12 +1935,8 @@ function createMarketplaceMultiSelect(ids) {
     render();
   });
   panel.addEventListener("click", (e) => e.stopPropagation());
-  document.addEventListener("click", (e) => {
-    if (!dropdown.contains(e.target)) closePanel();
-  });
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape") closePanel();
-  });
+  document.addEventListener("click", (e) => { if (!dropdown.contains(e.target)) closePanel(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closePanel(); });
 
   render();
 
@@ -1643,6 +1969,7 @@ const returnMarketplaceCtrl = createMarketplaceMultiSelect({
   const sheetSelect = document.getElementById("salesSheetSelect");
   const generateBtn = document.getElementById("salesGenerateBtn");
   const downloadBtn = document.getElementById("salesDownloadBtn");
+  const viewLogBtn = document.getElementById("salesViewLogBtn");
   const clearBtn = document.getElementById("salesClearBtn");
   const progressWrap = document.getElementById("salesProgressWrap");
   const progressFill = document.getElementById("salesProgressFill");
@@ -1650,9 +1977,27 @@ const returnMarketplaceCtrl = createMarketplaceMultiSelect({
   const stepsEl = document.getElementById("salesSteps");
   const logEl = document.getElementById("salesLog");
   const previewTable = document.getElementById("salesPreviewTable");
+  const paginationEl = document.getElementById("salesPagination");
+  const matchIndicatorEl = document.getElementById("salesMatchIndicator");
+  const lastRunEl = document.getElementById("salesLastRun");
+  const breakdownSelect = document.getElementById("salesBreakdownSelect");
+  const breakdownGrid = document.getElementById("salesBreakdownGrid");
+  const breakdownQtyEl = document.getElementById("salesBreakdownQty");
+  const breakdownInValEl = document.getElementById("salesBreakdownInputValue");
+  const breakdownOutValEl = document.getElementById("salesBreakdownOutputValue");
+
+  const paginatedTable = createPaginatedTable(previewTable, paginationEl, 100);
+  wireFilterBar(
+    document.getElementById("salesFilterColumn"),
+    document.getElementById("salesFilterValue"),
+    document.getElementById("salesFilterClearBtn"),
+    sapHeaders(),
+    paginatedTable
+  );
 
   let currentFile = null;
   let lastResult = null; // { outputRows, headers }
+  let lastBreakdown = {};
 
   const zone = wireDropZone(dropzone, browseBtn, fileInput, hint, onFileSelected);
 
@@ -1681,6 +2026,8 @@ const returnMarketplaceCtrl = createMarketplaceMultiSelect({
     }
   }
 
+  viewLogBtn.addEventListener("click", () => openLogModal("Sales Upload — Activity Log", logEl.textContent));
+
   clearBtn.addEventListener("click", () => {
     playSound("click");
     currentFile = null;
@@ -1689,12 +2036,23 @@ const returnMarketplaceCtrl = createMarketplaceMultiSelect({
     sheetRow.style.display = "none";
     resetProgress(progressWrap, progressFill, statusEl, stepsEl);
     logEl.textContent = "";
-    previewTable.innerHTML = "";
-    const prevEmpty = previewTable.parentElement.querySelector(".preview-empty");
-    if (prevEmpty) prevEmpty.remove();
+    paginatedTable.clear();
     downloadBtn.disabled = true;
     lastResult = null;
+    lastBreakdown = {};
+    matchIndicatorEl.textContent = "";
+    matchIndicatorEl.className = "match-indicator neutral";
+    lastRunEl.textContent = "";
+    ["salesInputQty", "salesOutputQty", "salesInputValue", "salesOutputValue"].forEach((id) => {
+      document.getElementById(id).textContent = "-";
+    });
+    breakdownSelect.innerHTML = '<option value="__all__">All marketplaces (total)</option>';
+    breakdownGrid.style.display = "none";
     salesMarketplaceCtrl.reset();
+  });
+
+  breakdownSelect.addEventListener("change", () => {
+    updateBreakdownCards(lastBreakdown, breakdownSelect.value, breakdownGrid, breakdownQtyEl, breakdownInValEl, breakdownOutValEl);
   });
 
   generateBtn.addEventListener("click", async () => {
@@ -1722,8 +2080,8 @@ const returnMarketplaceCtrl = createMarketplaceMultiSelect({
       playSound("step");
       await yieldToUI();
 
-      const inputQty = allRows.length;
-      const inputValue = sumInputValue(headerIndex, allRows);
+      const inputQtyAll = allRows.length;
+      const inputValueAll = sumInputValue(headerIndex, allRows);
 
       let dataRows = allRows;
       let filtered = false;
@@ -1752,6 +2110,7 @@ const returnMarketplaceCtrl = createMarketplaceMultiSelect({
       const updates = buildHistoryUpdates(headerIndex, dataRows);
       const changed = mergeHistory(updates);
       if (changed) logMsg(logEl, `Sales history updated (${changed} order/SKU entries) for future Return lookups.`);
+      updateHistoryStatus();
       setProgress(progressWrap, progressFill, statusEl, stepsEl, 92, "Reconciling data...");
       await yieldToUI();
 
@@ -1759,16 +2118,26 @@ const returnMarketplaceCtrl = createMarketplaceMultiSelect({
       logMsg(logEl, `\nCompleted. ${outputRows.length} rows generated.`);
 
       statusEl.textContent = "Generating report...";
+      const inputQty = dataRows.length;
+      const inputValue = sumInputValue(headerIndex, dataRows);
       const outputValue = sumOutputValue(outputRows);
-      dash.inputQty = inputQty; dash.outputQty = outputRows.length;
-      dash.inputValue = inputValue; dash.outputValue = outputValue;
-      dash.lastSalesRun = new Date();
-      updateMatchIndicator(inputQty, outputRows.length, inputValue, outputValue, { qtyFiltered: filtered, mode: "SALES" });
-      refreshDashboard();
+
+      document.getElementById("salesInputQty").textContent = inputQty;
+      document.getElementById("salesOutputQty").textContent = outputRows.length;
+      document.getElementById("salesInputValue").textContent = formatMoney(inputValue);
+      document.getElementById("salesOutputValue").textContent = formatMoney(outputValue);
+      updateMatchIndicator(matchIndicatorEl, inputQty, outputRows.length, inputValue, outputValue, { qtyFiltered: filtered, mode: "SALES" });
+      lastRunEl.textContent = "Generated at " + new Date().toLocaleTimeString();
+
+      const outTotIdx = sapHeaders().indexOf(DASHBOARD_OUTPUT_VALUE_FIELD);
+      lastBreakdown = computeChannelBreakdown(headerIndex, dataRows, outputRows, "Display Order Code", DASHBOARD_INPUT_VALUE_COLUMN, outTotIdx);
+      renderBreakdownSelect(breakdownSelect, lastBreakdown);
+      updateBreakdownCards(lastBreakdown, breakdownSelect.value, breakdownGrid, breakdownQtyEl, breakdownInValEl, breakdownOutValEl);
+
       setProgress(progressWrap, progressFill, statusEl, stepsEl, 97, "Finalizing results...");
       await yieldToUI();
 
-      renderPreviewTable(previewTable, sapHeaders(), outputRows, 100);
+      paginatedTable.setData(sapHeaders(), outputRows);
       lastResult = { outputRows, headers: sapHeaders() };
       downloadBtn.disabled = false;
       setProgress(progressWrap, progressFill, statusEl, stepsEl, 100, "Complete");
@@ -1793,8 +2162,21 @@ const returnMarketplaceCtrl = createMarketplaceMultiSelect({
 })();
 
 // ============================================================================
-// RETURN TAB
+// RETURN TAB (includes optional Sales-file-for-RP-Code-only import)
 // ============================================================================
+// RP Code explainer is collapsed by default (see Return Upload UI simplification) —
+// toggled open via a small info button instead of always taking up space.
+(function rpInfoToggleInit() {
+  const btn = document.getElementById("rpInfoToggleBtn");
+  const box = document.getElementById("rpInfoBox");
+  btn.addEventListener("click", () => {
+    const willShow = box.style.display === "none";
+    box.style.display = willShow ? "flex" : "none";
+    btn.setAttribute("aria-expanded", String(willShow));
+    playSound(willShow ? "open" : "close");
+  });
+})();
+
 (function returnTabInit() {
   const dropzone = document.getElementById("returnDropzone");
   const browseBtn = document.getElementById("returnBrowseBtn");
@@ -1804,6 +2186,7 @@ const returnMarketplaceCtrl = createMarketplaceMultiSelect({
   const sheetSelect = document.getElementById("returnSheetSelect");
   const generateBtn = document.getElementById("returnGenerateBtn");
   const downloadBtn = document.getElementById("returnDownloadBtn");
+  const viewLogBtn = document.getElementById("returnViewLogBtn");
   const clearBtn = document.getElementById("returnClearBtn");
   const progressWrap = document.getElementById("returnProgressWrap");
   const progressFill = document.getElementById("returnProgressFill");
@@ -1811,9 +2194,27 @@ const returnMarketplaceCtrl = createMarketplaceMultiSelect({
   const stepsEl = document.getElementById("returnSteps");
   const logEl = document.getElementById("returnLog");
   const previewTable = document.getElementById("returnPreviewTable");
+  const paginationEl = document.getElementById("returnPagination");
+  const matchIndicatorEl = document.getElementById("returnMatchIndicator");
+  const lastRunEl = document.getElementById("returnLastRun");
+  const breakdownSelect = document.getElementById("returnBreakdownSelect");
+  const breakdownGrid = document.getElementById("returnBreakdownGrid");
+  const breakdownQtyEl = document.getElementById("returnBreakdownQty");
+  const breakdownInValEl = document.getElementById("returnBreakdownInputValue");
+  const breakdownOutValEl = document.getElementById("returnBreakdownOutputValue");
+
+  const paginatedTable = createPaginatedTable(previewTable, paginationEl, 100);
+  wireFilterBar(
+    document.getElementById("returnFilterColumn"),
+    document.getElementById("returnFilterValue"),
+    document.getElementById("returnFilterClearBtn"),
+    RETURN_OUTPUT_COLUMNS,
+    paginatedTable
+  );
 
   let currentFile = null;
   let lastResult = null;
+  let lastBreakdown = {};
 
   const zone = wireDropZone(dropzone, browseBtn, fileInput, hint, onFileSelected);
 
@@ -1840,6 +2241,8 @@ const returnMarketplaceCtrl = createMarketplaceMultiSelect({
     }
   }
 
+  viewLogBtn.addEventListener("click", () => openLogModal("Return Upload — Activity Log", logEl.textContent));
+
   clearBtn.addEventListener("click", () => {
     playSound("click");
     currentFile = null;
@@ -1848,12 +2251,23 @@ const returnMarketplaceCtrl = createMarketplaceMultiSelect({
     sheetRow.style.display = "none";
     resetProgress(progressWrap, progressFill, statusEl, stepsEl);
     logEl.textContent = "";
-    previewTable.innerHTML = "";
-    const prevEmpty = previewTable.parentElement.querySelector(".preview-empty");
-    if (prevEmpty) prevEmpty.remove();
+    paginatedTable.clear();
     downloadBtn.disabled = true;
     lastResult = null;
+    lastBreakdown = {};
+    matchIndicatorEl.textContent = "";
+    matchIndicatorEl.className = "match-indicator neutral";
+    lastRunEl.textContent = "";
+    ["returnInputQty", "returnOutputQty", "returnInputValue", "returnOutputValue"].forEach((id) => {
+      document.getElementById(id).textContent = "-";
+    });
+    breakdownSelect.innerHTML = '<option value="__all__">All marketplaces (total)</option>';
+    breakdownGrid.style.display = "none";
     returnMarketplaceCtrl.reset();
+  });
+
+  breakdownSelect.addEventListener("change", () => {
+    updateBreakdownCards(lastBreakdown, breakdownSelect.value, breakdownGrid, breakdownQtyEl, breakdownInValEl, breakdownOutValEl);
   });
 
   generateBtn.addEventListener("click", async () => {
@@ -1880,9 +2294,6 @@ const returnMarketplaceCtrl = createMarketplaceMultiSelect({
       playSound("step");
       await yieldToUI();
 
-      const inputQty = allRows.length;
-      const inputValue = sumInputValue(headerIndex, allRows, RETURN_TOTAL_SOURCE_COL);
-
       let dataRows = allRows;
       let filtered = false;
       const selectedMarkets = returnMarketplaceCtrl.getSelected();
@@ -1899,7 +2310,6 @@ const returnMarketplaceCtrl = createMarketplaceMultiSelect({
 
       const history = loadHistory();
       logMsg(logEl, `Loaded Sales history (${Object.keys(history).length} order/SKU entries known).`);
-      setProgress(progressWrap, progressFill, statusEl, stepsEl, 45, "Processing records...");
       await yieldToUI();
 
       statusEl.textContent = "Processing records...";
@@ -1915,17 +2325,26 @@ const returnMarketplaceCtrl = createMarketplaceMultiSelect({
       logMsg(logEl, `\nCompleted. ${outputRows.length} return rows generated.`);
 
       statusEl.textContent = "Generating report...";
+      const inputQty = dataRows.length;
+      const inputValue = sumInputValue(headerIndex, dataRows, RETURN_TOTAL_SOURCE_COL);
       const totalIdx = RETURN_OUTPUT_COLUMNS.indexOf("Total");
       const outputValue = outputRows.reduce((acc, row) => acc + toNumber(row[totalIdx]), 0);
-      dash.inputQty = inputQty; dash.outputQty = outputRows.length;
-      dash.inputValue = inputValue; dash.outputValue = outputValue;
-      dash.lastReturnRun = new Date();
-      updateMatchIndicator(inputQty, outputRows.length, inputValue, outputValue, { qtyFiltered: filtered, mode: "RETURN" });
-      refreshDashboard();
+
+      document.getElementById("returnInputQty").textContent = inputQty;
+      document.getElementById("returnOutputQty").textContent = outputRows.length;
+      document.getElementById("returnInputValue").textContent = formatMoney(inputValue);
+      document.getElementById("returnOutputValue").textContent = formatMoney(outputValue);
+      updateMatchIndicator(matchIndicatorEl, inputQty, outputRows.length, inputValue, outputValue, { qtyFiltered: filtered, mode: "RETURN" });
+      lastRunEl.textContent = "Generated at " + new Date().toLocaleTimeString();
+
+      lastBreakdown = computeChannelBreakdown(headerIndex, dataRows, outputRows, "Sale Order Number", RETURN_TOTAL_SOURCE_COL, totalIdx);
+      renderBreakdownSelect(breakdownSelect, lastBreakdown);
+      updateBreakdownCards(lastBreakdown, breakdownSelect.value, breakdownGrid, breakdownQtyEl, breakdownInValEl, breakdownOutValEl);
+
       setProgress(progressWrap, progressFill, statusEl, stepsEl, 97, "Finalizing results...");
       await yieldToUI();
 
-      renderPreviewTable(previewTable, RETURN_OUTPUT_COLUMNS, outputRows, 100);
+      paginatedTable.setData(RETURN_OUTPUT_COLUMNS, outputRows);
       lastResult = { outputRows, headers: RETURN_OUTPUT_COLUMNS };
       downloadBtn.disabled = false;
       setProgress(progressWrap, progressFill, statusEl, stepsEl, 100, "Complete");
@@ -1947,6 +2366,80 @@ const returnMarketplaceCtrl = createMarketplaceMultiSelect({
     downloadXLSX(`SAP_Upload_Return_${stamp}.xlsx`, lastResult.headers, lastResult.outputRows);
     logMsg(logEl, "Downloaded Return SAP upload file.");
   });
+
+  // ---- Optional: import a Sales file purely to capture RP Code history ----
+  // Reuses the exact same core functions as the Sales tab (loadDumpFile,
+  // buildHistoryUpdates, mergeHistory) — no separate parsing/calculation
+  // logic. No Sales output file is generated or offered for download here.
+  (function returnSalesImportInit() {
+    const rsDropzone = document.getElementById("returnSalesDropzone");
+    const rsBrowseBtn = document.getElementById("returnSalesBrowseBtn");
+    const rsFileInput = document.getElementById("returnSalesFileInput");
+    const rsHint = document.getElementById("returnSalesHint");
+    const rsSheetRow = document.getElementById("returnSalesSheetRow");
+    const rsSheetSelect = document.getElementById("returnSalesSheetSelect");
+    const rsImportBtn = document.getElementById("returnSalesImportBtn");
+    const rsStatus = document.getElementById("returnSalesImportStatus");
+
+    let rsFile = null;
+
+    const rsZone = wireDropZone(rsDropzone, rsBrowseBtn, rsFileInput, rsHint, onRsFileSelected);
+
+    async function onRsFileSelected(file) {
+      rsFile = file;
+      rsZone.setFileName(file.name);
+      rsStatus.textContent = "";
+      if (file.name.toLowerCase().endsWith(".csv")) {
+        rsSheetRow.style.display = "none";
+        rsSheetSelect.innerHTML = "";
+        return;
+      }
+      try {
+        const sheets = await listExcelSheets(file);
+        const wanted = MAPPING_DATA.filter(([, uc]) => uc).map(([, uc]) => norm(uc));
+        const best = sheets.length ? await guessBestSheet(file, wanted) : "";
+        rsSheetSelect.innerHTML = "";
+        sheets.forEach((s) => {
+          const opt = document.createElement("option");
+          opt.value = s; opt.textContent = s;
+          rsSheetSelect.appendChild(opt);
+        });
+        rsSheetSelect.value = best;
+        rsSheetRow.style.display = sheets.length > 1 ? "flex" : "none";
+      } catch (e) {
+        alert("Error reading file: " + e.message);
+      }
+    }
+
+    rsImportBtn.addEventListener("click", async () => {
+      if (!rsFile) { alert("Please select a Sales dump file first."); return; }
+      const isExcel = !rsFile.name.toLowerCase().endsWith(".csv");
+      const sheetName = rsSheetSelect.value;
+      if (isExcel && rsSheetRow.style.display !== "none" && !sheetName) {
+        alert("Please select which sheet contains the order data."); return;
+      }
+      rsImportBtn.disabled = true;
+      playSound("start");
+      try {
+        rsStatus.textContent = "Reading Sales file...";
+        logMsg(logEl, `Importing Sales file for RP Code only: ${rsFile.name}` + (isExcel ? ` (sheet '${sheetName}')` : " (CSV)"));
+        const { headerIndex, dataRows } = await loadDumpFile(rsFile, isExcel ? sheetName : null);
+        const updates = buildHistoryUpdates(headerIndex, dataRows);
+        const changed = mergeHistory(updates);
+        updateHistoryStatus();
+        rsStatus.textContent = `Done — ${changed} order/SKU entries captured from ${dataRows.length} Sales rows (no Sales output file generated).`;
+        logMsg(logEl, `RP Code history updated from Sales import: ${changed} order/SKU entries (${dataRows.length} rows scanned).`);
+        playSound("success");
+      } catch (e) {
+        rsStatus.textContent = "Error: " + e.message;
+        logMsg(logEl, "ERROR importing Sales file for RP Code: " + e.message);
+        playSound("error");
+        alert("Error: " + e.message);
+      } finally {
+        rsImportBtn.disabled = false;
+      }
+    });
+  })();
 })();
 
 // ============================================================================
@@ -1974,7 +2467,7 @@ const returnMarketplaceCtrl = createMarketplaceMultiSelect({
       const incoming = JSON.parse(text);
       const changed = mergeHistory(incoming);
       alert(`Imported. ${changed} new/updated order-SKU entries merged into this browser's history.`);
-      refreshDashboard();
+      updateHistoryStatus();
       playSound("success");
     } catch (e) {
       alert("Could not import that file: " + e.message);
@@ -1989,12 +2482,14 @@ const returnMarketplaceCtrl = createMarketplaceMultiSelect({
       + "matching in this browser. Future Returns won't resolve RP Code until Sales files are processed "
       + "again. Continue?")) {
       localStorage.removeItem(LS_HISTORY);
-      refreshDashboard();
+      updateHistoryStatus();
     }
   });
 
   document.getElementById("mappingInfo").textContent =
     `${MAPPING_DATA.length} SAP fields are mapped in this app. To change the mapping, edit MAPPING_DATA near the top of the embedded script.`;
+
+  updateHistoryStatus();
 })();
 
 // ============================================================================
@@ -2014,25 +2509,28 @@ embedded script in this file.
 Return Upload reads the Return report, computes Total as raw Total minus Other charges and
 Other charges1, computes Unit Price as raw Total / Qty, and looks up RP Code by matching Sale
 Order Number + Product SKU Code against Sales history built from every Sales Upload run in
-this browser.
+this browser (including the optional "Import Sales File for RP Code" shortcut on the Return tab).
 
-Channel detection patterns (regex, matched against Display Order Code):
+Channel detection patterns (regex, matched against Display Order Code / Sale Order Number):
 ${channelLines}
-   Anything else is labeled 'Other' rather than guessed.
+   Anything else is labeled 'Other' rather than guessed - and 'Other' is itself a selectable
+   marketplace filter option.
+
+The Shipping Address State value "Dadra and Nagar Haveli and Daman and Diu" is automatically
+normalized to SAP's expected "DADRA AND NAGAR HAVELI AND DAM" on every Sales row, regardless
+of marketplace.
 
 Sales history and preferences are stored in this browser's local storage only - they are not
-shared automatically across computers or browsers. Use Export/Import History under Settings to
-move Sales history between machines (e.g. after processing Sales on one depot's PC, export the
-history and import it on the PC that processes Returns).
+shared automatically across computers or browsers. Use Export/Import History under the menu's
+Settings to move Sales history between machines.
 
-Marketplace filter on the Sales tab now supports selecting multiple marketplaces at once
-(checkbox multi-select) - leaving it empty or selecting all marketplaces behaves exactly like
-the previous "All marketplaces" option.`;
+Each tab's Output Preview supports paging (100 rows per page) and a column filter for quickly
+checking specific values, independent of the full generated file, which is unaffected by
+preview filters or paging.`;
 })();
 
-// ---- init dashboard on load ----
-refreshDashboard();
-
+// ---- init ----
+updateHistoryStatus();
 </script>
 </body>
 </html>
