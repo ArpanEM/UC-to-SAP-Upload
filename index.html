@@ -1085,10 +1085,15 @@ function formatOutputValue(sapHeader, value) {
 }
 
 // ---- Sales output ------------------------------------------------------------
+const GIFT_WRAP_CHARGES_COL = "Gift Wrap Charges";
+
 function buildOutputRows(headerIndex, dataRows) {
   const warnings = [];
   const seenMissing = new Set();
   const outputRows = [];
+  const giftWrapIdx = headerIndex[norm(GIFT_WRAP_CHARGES_COL)];
+  let giftWrapFoldedCount = 0;
+
   for (const row of dataRows) {
     const outRow = [];
     for (const [sapHeader, ucHeader] of MAPPING_DATA) {
@@ -1107,11 +1112,26 @@ function buildOutputRows(headerIndex, dataRows) {
         }
         outRow.push(null);
       } else {
-        const val = idx < row.length ? row[idx] : null;
+        let val = idx < row.length ? row[idx] : null;
+        // There is no dedicated SAP field for Gift Wrap Charges, so fold it
+        // into Shipping Charges (ORD_SHP_CRG) instead of losing it.
+        if (sapHeader === "ORD_SHP_CRG" && giftWrapIdx !== undefined) {
+          const giftWrapVal = giftWrapIdx < row.length ? row[giftWrapIdx] : null;
+          const giftWrapAmount = toNumber(giftWrapVal);
+          if (giftWrapAmount) {
+            val = toNumber(val) + giftWrapAmount;
+            giftWrapFoldedCount++;
+          }
+        }
         outRow.push(formatOutputValue(sapHeader, val));
       }
     }
     outputRows.push(outRow);
+  }
+  if (giftWrapFoldedCount) {
+    warnings.push(
+      `Gift Wrap Charges had no dedicated SAP field, so it was added into Shipping Charges (ORD_SHP_CRG) for ${giftWrapFoldedCount} row(s).`
+    );
   }
   return { outputRows, warnings };
 }
@@ -1194,6 +1214,7 @@ function buildReturnOutputRows(headerIndex, dataRows, salesHistory) {
   const warnings = [];
   const seenMissing = new Set();
   let missingRpCount = 0;
+  let giftWrapRelabeledCount = 0;
   const outputRows = [];
 
   function get(row, colName) {
@@ -1208,11 +1229,27 @@ function buildReturnOutputRows(headerIndex, dataRows, salesHistory) {
     return idx < row.length ? row[idx] : null;
   }
 
+  // There is no dedicated "Gift Wrap" ledger in the SAP Return template, so
+  // any Other charges ledger labeled Gift Wrap is relabeled as Shipping
+  // Charges instead - the amount itself is untouched, it already flows
+  // through the existing Total = raw Total - Other charges - Other charges1
+  // calculation regardless of its ledger label.
+  function relabelGiftWrap(ledgerValue) {
+    if (ledgerValue !== null && ledgerValue !== undefined && /gift\s*wrap/i.test(String(ledgerValue))) {
+      giftWrapRelabeledCount++;
+      return "Shipping Charges";
+    }
+    return ledgerValue;
+  }
+
   for (const row of dataRows) {
     const out = {};
     for (const [templateCol, dumpCol] of RETURN_DIRECT_MAPPING) {
       out[templateCol] = get(row, dumpCol);
     }
+    out["Other charges Ledger"] = relabelGiftWrap(out["Other charges Ledger"]);
+    out["Other charges Ledger1"] = relabelGiftWrap(out["Other charges Ledger1"]);
+
     const rawTotal = toNumber(get(row, RETURN_TOTAL_SOURCE_COL));
     const qty = toNumber(get(row, RETURN_QTY_COL));
     const other1 = toNumber(out["Other charges"]);
@@ -1235,6 +1272,11 @@ function buildReturnOutputRows(headerIndex, dataRows, salesHistory) {
     outputRows.push(RETURN_OUTPUT_COLUMNS.map((c) => (out[c] === undefined ? null : out[c])));
   }
 
+  if (giftWrapRelabeledCount) {
+    warnings.push(
+      `Gift Wrap has no dedicated ledger in the Return template, so it was relabeled as Shipping Charges for ${giftWrapRelabeledCount} row(s) (amount unchanged).`
+    );
+  }
   if (missingRpCount) {
     warnings.push(
       `RP Code could not be found in Sales history for ${missingRpCount} row(s) - left blank. ` +
