@@ -1,0 +1,2788 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>UC to SAP Order Upload Mapper</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+<style>
+  :root {
+    --bg: #F3F5F9; --surface: #FFFFFF; --surface-2: #F8FAFC; --border: #E2E8F0; --border-strong: #CBD5E1;
+    --text: #0F172A; --text-2: #334155; --muted: #64748B;
+    --accent: #1E4FA8; --accent-hover: #173F87; --accent-soft: #E8EFFB; --accent-rgb: 30,79,168;
+    --success: #0E7A5F; --success-soft: #E3F4EE; --success-rgb: 14,122,95;
+    --danger: #C0392B; --danger-soft: #FBEAE8; --danger-rgb: 192,57,43;
+    --warn: #B7791F; --warn-soft: #FDF3E1;
+    --track: #E2E8F0; --log-bg: #0F172A; --log-fg: #CBD5E1;
+    --shadow-sm: 0 1px 2px rgba(15,23,42,0.05);
+    --shadow: 0 1px 3px rgba(15,23,42,0.06), 0 4px 14px rgba(15,23,42,0.04);
+    --shadow-lg: 0 12px 40px rgba(15,23,42,0.18);
+    --radius: 10px; --radius-sm: 6px;
+    --font: Inter, "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+    color-scheme: light;
+  }
+  [data-theme="dark"] {
+    --bg: #0E131B; --surface: #151C27; --surface-2: #1A2331; --border: #263143; --border-strong: #34425A;
+    --text: #E6EDF7; --text-2: #C3CEDF; --muted: #8A98AE;
+    --accent: #5B9BFF; --accent-hover: #7FB0FF; --accent-soft: rgba(91,155,255,0.14); --accent-rgb: 91,155,255;
+    --success: #3DBE9A; --success-soft: rgba(61,190,154,0.14); --success-rgb: 61,190,154;
+    --danger: #F07167; --danger-soft: rgba(240,113,103,0.14); --danger-rgb: 240,113,103;
+    --warn: #E0A93B; --warn-soft: rgba(224,169,59,0.14);
+    --track: #263143; --log-bg: #0A0F16; --log-fg: #B8C6DB;
+    --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
+    --shadow: 0 1px 3px rgba(0,0,0,0.35), 0 4px 14px rgba(0,0,0,0.25);
+    --shadow-lg: 0 12px 40px rgba(0,0,0,0.55);
+    color-scheme: dark;
+  }
+
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body { margin: 0; font-family: var(--font); font-size: 14px; line-height: 1.5; color: var(--text); background: var(--bg); }
+  h1, h2, h3, h4, p { margin: 0; }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: var(--border-strong); border-radius: 8px; border: 2px solid transparent; background-clip: content-box; }
+  ::-webkit-scrollbar-track { background: transparent; }
+
+  /* ---------- Top bar ---------- */
+  .topbar { background: var(--surface); border-bottom: 1px solid var(--border); position: sticky; top: 0; z-index: 50; }
+  .topbar-inner { max-width: 1360px; margin: 0 auto; padding: 12px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; }
+  .brand { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .brand-mark { width: 38px; height: 38px; border-radius: 9px; background: var(--accent); color: #fff; display: grid; place-items: center; font-size: 16px; flex: none; }
+  .brand-title { font-size: 16px; font-weight: 700; letter-spacing: -0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .brand-sub { font-size: 12px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .top-actions { display: flex; align-items: center; gap: 8px; }
+  .icon-btn { height: 36px; min-width: 36px; padding: 0 10px; display: inline-flex; align-items: center; justify-content: center; gap: 7px; background: var(--surface); color: var(--text-2); border: 1px solid var(--border); border-radius: var(--radius-sm); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; transition: background .15s, border-color .15s; }
+  .icon-btn:hover { background: var(--surface-2); border-color: var(--border-strong); }
+  .icon-btn.on { color: var(--accent); }
+
+  /* ---------- Layout ---------- */
+  .container { max-width: 1360px; margin: 0 auto; padding: 20px 24px 60px; }
+  .nav { display: flex; align-items: center; justify-content: space-between; gap: 12px; border-bottom: 1px solid var(--border); margin-bottom: 22px; }
+  .nav-tabs { display: flex; gap: 2px; flex-wrap: wrap; }
+  .tab-btn { background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -1px; padding: 12px 18px; font: inherit; font-size: 14px; font-weight: 600; color: var(--muted); cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: color .15s, border-color .15s; border-radius: 0; }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; animation: fadein .2s ease; }
+  @keyframes fadein { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+  .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 16px; flex-wrap: wrap; margin-bottom: 18px; }
+  .page-head h2 { font-size: 22px; font-weight: 700; letter-spacing: -0.015em; }
+  .muted { color: var(--muted); font-size: 13px; }
+  .panel { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); box-shadow: var(--shadow-sm); padding: 20px; margin-bottom: 18px; }
+  .panel-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 14px; }
+  .panel-title { font-size: 14px; font-weight: 700; display: flex; align-items: center; gap: 9px; color: var(--text); }
+  .panel-title i { color: var(--accent); font-size: 14px; }
+  .step-badge { width: 22px; height: 22px; border-radius: 50%; background: var(--accent); color: #fff; font-size: 12px; font-weight: 700; display: inline-grid; place-items: center; }
+  .grid-2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 18px; }
+  .section-label { font-size: 12px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; color: var(--muted); margin: 0 0 10px; display: flex; align-items: center; gap: 8px; }
+
+  /* ---------- Form controls ---------- */
+  button { font: inherit; font-size: 13px; font-weight: 600; background: var(--surface); color: var(--text-2); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); padding: 8px 14px; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; transition: background .15s, border-color .15s, box-shadow .15s, opacity .15s; }
+  button:hover:not(:disabled) { background: var(--surface-2); border-color: var(--muted); }
+  button.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  button.primary:hover:not(:disabled) { background: var(--accent-hover); border-color: var(--accent-hover); }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  button:focus-visible, select:focus-visible, input:focus-visible, .dropzone:focus-visible { outline: 2px solid rgba(var(--accent-rgb), .55); outline-offset: 2px; }
+  select, input[type="text"], input[type="date"] { font: inherit; font-size: 13px; color: var(--text); background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); padding: 8px 10px; min-width: 0; }
+  input[type="date"] { color-scheme: inherit; }
+  .btn-row { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+  .field-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin: 12px 0; }
+  .field-label { font-size: 12px; font-weight: 700; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; display: inline-flex; align-items: center; gap: 7px; }
+  .field-group { display: flex; flex-direction: column; gap: 4px; }
+  .field-group label { font-size: 11px; font-weight: 700; color: var(--muted); letter-spacing: .04em; text-transform: uppercase; }
+  .checkbox-row { display: flex; align-items: center; gap: 10px; }
+  .checkbox-row input { width: 16px; height: 16px; accent-color: var(--accent); }
+  .grid-form { display: grid; grid-template-columns: minmax(260px, 1fr) minmax(0, 2fr); gap: 20px; align-items: start; }
+
+  /* ---------- Marketplace multi-select ---------- */
+  .ms-dropdown { position: relative; min-width: 280px; max-width: 100%; }
+  .ms-toggle { width: 100%; justify-content: space-between; background: var(--surface); padding: 9px 12px; font-weight: 500; color: var(--text); }
+  .ms-toggle-left { display: inline-flex; align-items: center; gap: 9px; min-width: 0; }
+  .ms-toggle-left i { color: var(--accent); }
+  .ms-toggle-text { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 280px; }
+  .ms-caret { font-size: 11px; color: var(--muted); transition: transform .15s; }
+  .ms-dropdown.open .ms-caret { transform: rotate(180deg); }
+  .ms-dropdown.open .ms-toggle { border-color: var(--accent); }
+  .ms-panel { display: none; position: absolute; top: calc(100% + 6px); left: 0; right: 0; min-width: 280px; z-index: 40; background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--radius); box-shadow: var(--shadow-lg); padding: 10px; }
+  .ms-dropdown.open .ms-panel { display: block; }
+  .ms-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+  .ms-chips:empty { display: none; }
+  .ms-chip { display: inline-flex; align-items: center; gap: 6px; background: var(--accent-soft); color: var(--accent); border-radius: 999px; padding: 3px 6px 3px 10px; font-size: 12px; font-weight: 600; }
+  .ms-chip button { border: none; background: none; padding: 0 4px; font-size: 15px; line-height: 1; color: inherit; border-radius: 50%; }
+  .ms-chip button:hover:not(:disabled) { background: rgba(var(--accent-rgb), .18); }
+  .ms-actions { display: flex; gap: 6px; margin-bottom: 8px; }
+  .ms-actions button { flex: 1; justify-content: center; font-size: 12px; padding: 6px 8px; }
+  .ms-options { display: flex; flex-direction: column; gap: 2px; max-height: 260px; overflow-y: auto; }
+  .ms-option { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--radius-sm); cursor: pointer; font-size: 13px; user-select: none; }
+  .ms-option:hover { background: var(--surface-2); }
+  .ms-option.checked { background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+  .ms-option input { accent-color: var(--accent); pointer-events: none; }
+  .ms-option .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--border-strong); }
+  .ms-option.checked .dot { background: var(--accent); }
+  .live-hint { font-size: 12px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
+
+  /* ---------- Dropzone ---------- */
+  .dropzone { border: 1.5px dashed var(--border-strong); background: var(--surface-2); border-radius: var(--radius); padding: 18px 20px; display: flex; align-items: center; justify-content: space-between; gap: 16px; cursor: pointer; transition: border-color .15s, background .15s; }
+  .dropzone:hover, .dropzone.dragover { border-color: var(--accent); background: var(--accent-soft); }
+  .dropzone-left { display: flex; align-items: center; gap: 14px; min-width: 0; }
+  .dropzone-icon { width: 42px; height: 42px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); color: var(--accent); display: grid; place-items: center; font-size: 18px; flex: none; }
+  .dropzone .hint { font-weight: 600; color: var(--text); word-break: break-all; }
+  .dropzone .hint.has-file { color: var(--accent); }
+  .dropzone-sub { font-size: 12px; color: var(--muted); }
+
+  /* ---------- Progress ---------- */
+  .progress-wrap { margin-top: 18px; padding: 16px 18px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-2); }
+  .progress-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; margin-bottom: 8px; }
+  .status-text { font-size: 13px; font-weight: 600; color: var(--text-2); }
+  .status-text.complete { color: var(--success); }
+  .status-text.errored { color: var(--danger); }
+  .progress-pct { font-size: 13px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--text); }
+  .progress-track { height: 10px; background: var(--track); border-radius: 999px; overflow: hidden; }
+  .progress-fill { height: 100%; width: 0%; border-radius: 999px; background: var(--accent); transition: width .45s cubic-bezier(.22,.61,.36,1), background-color .25s ease; position: relative; overflow: hidden; }
+  .progress-wrap.progress-active .progress-fill::after { content: ""; position: absolute; inset: 0; background: linear-gradient(90deg, transparent, rgba(255,255,255,.35), transparent); transform: translateX(-100%); animation: sweep 1.3s ease-in-out infinite; }
+  @keyframes sweep { to { transform: translateX(100%); } }
+  .progress-wrap.progress-complete .progress-fill { background: var(--success); }
+  .progress-wrap.progress-error .progress-fill { background: var(--danger); }
+  .progress-steps { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; list-style: none; margin: 14px 0 0; padding: 0; }
+  .progress-steps li { font-size: 11px; font-weight: 600; color: var(--muted); padding-top: 7px; border-top: 3px solid var(--track); transition: color .2s, border-color .2s; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .progress-steps li.active { color: var(--accent); border-top-color: var(--accent); }
+  .progress-steps li.done { color: var(--success); border-top-color: var(--success); }
+
+  /* ---------- KPI / summary cards ---------- */
+  .card-grid, .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 14px; }
+  .card, .kpi { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px 18px; position: relative; box-shadow: var(--shadow-sm); }
+  .card .card-icon, .kpi .kpi-icon { position: absolute; top: 14px; right: 14px; width: 30px; height: 30px; border-radius: 8px; background: var(--accent-soft); color: var(--accent); display: grid; place-items: center; font-size: 13px; }
+  .card .label, .kpi .kpi-label { font-size: 12px; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: .04em; }
+  .card .value, .kpi .kpi-value { font-size: 24px; font-weight: 700; letter-spacing: -0.02em; margin-top: 4px; font-variant-numeric: tabular-nums; word-break: break-word; }
+  .kpi .kpi-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  .kpi.good .kpi-icon { background: var(--success-soft); color: var(--success); }
+  .kpi.bad .kpi-icon { background: var(--danger-soft); color: var(--danger); }
+  .kpi.warn .kpi-icon { background: var(--warn-soft); color: var(--warn); }
+  .kpi .kpi-value.neg { color: var(--danger); }
+  .match-indicator { margin-top: 14px; padding: 10px 14px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; border: 1px solid transparent; }
+  .match-indicator:empty { display: none; }
+  .match-indicator.ok { background: var(--success-soft); color: var(--success); border-color: rgba(var(--success-rgb), .25); }
+  .match-indicator.warn { background: var(--danger-soft); color: var(--danger); border-color: rgba(var(--danger-rgb), .25); }
+  .match-indicator.neutral { background: var(--accent-soft); color: var(--accent); border-color: rgba(var(--accent-rgb), .2); }
+
+  /* ---------- Tables ---------- */
+  .table-scroll { overflow: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); }
+  table { border-collapse: collapse; width: 100%; font-size: 13px; }
+  .breakdown-table th, .breakdown-table td, table.preview th, table.preview td { padding: 9px 12px; text-align: left; border-bottom: 1px solid var(--border); white-space: nowrap; }
+  .breakdown-table thead th, table.preview thead th { background: var(--surface-2); color: var(--muted); font-size: 11px; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; position: sticky; top: 0; z-index: 2; border-bottom: 1px solid var(--border-strong); }
+  .breakdown-table td.num, .breakdown-table th.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .breakdown-table tbody tr:hover, table.preview tbody tr:hover { background: var(--accent-soft); }
+  .breakdown-table tfoot td { font-weight: 700; background: var(--surface-2); border-top: 1px solid var(--border-strong); border-bottom: none; position: sticky; bottom: 0; }
+  .breakdown-table td.neg { color: var(--danger); }
+  .breakdown-table td.pos { color: var(--success); }
+  table.preview tbody tr:nth-child(even) { background: var(--surface-2); }
+  .preview-scroll { overflow: auto; border: 1px solid var(--border); border-radius: var(--radius-sm); background: var(--surface); }
+  .bar-cell { display: flex; align-items: center; gap: 10px; min-width: 130px; }
+  .bar-cell .bar { flex: 1; height: 6px; background: var(--track); border-radius: 999px; overflow: hidden; }
+  .bar-cell .bar > span { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+
+  .filter-bar { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; margin-bottom: 10px; }
+  .filter-summary { font-size: 13px; color: var(--text-2); margin-bottom: 8px; }
+  .filter-summary:empty { display: none; }
+  .clear-filter-btn { padding: 3px 8px; font-size: 12px; margin-left: 6px; }
+  .empty-state { text-align: center; padding: 44px 16px; color: var(--muted); font-size: 13px; }
+  .empty-state i { display: block; font-size: 28px; margin-bottom: 10px; color: var(--border-strong); }
+  .pagination-bar { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-top: 12px; }
+  .pagination-info { font-size: 12px; color: var(--muted); }
+  .pagination-controls { display: flex; gap: 4px; flex-wrap: wrap; align-items: center; }
+  .page-btn { padding: 5px 10px; font-size: 12px; min-width: 32px; justify-content: center; }
+  .page-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .page-ellipsis { padding: 0 4px; color: var(--muted); }
+
+  /* ---------- Log / reminder ---------- */
+  .log-toggle { cursor: pointer; display: flex; align-items: center; gap: 9px; font-size: 14px; font-weight: 700; user-select: none; }
+  .log-toggle i { color: var(--accent); }
+  .log-wrap { display: none; margin-top: 12px; }
+  .log-wrap.open { display: block; }
+  .log { background: var(--log-bg); color: var(--log-fg); font-family: Consolas, "SF Mono", Menlo, monospace; font-size: 12px; padding: 12px 14px; border-radius: var(--radius-sm); height: 170px; overflow-y: auto; white-space: pre-wrap; }
+  .reminder-box { display: flex; gap: 12px; align-items: flex-start; background: var(--warn-soft); color: var(--text-2); border: 1px solid rgba(183,121,31,.25); border-radius: var(--radius); padding: 12px 16px; font-size: 13px; margin-bottom: 18px; }
+  .reminder-icon { color: var(--warn); margin-top: 2px; }
+
+  /* ---------- Dashboard ---------- */
+  .dash-filters { display: flex; gap: 12px; align-items: flex-end; flex-wrap: wrap; }
+  .dash-filters .ms-dropdown { min-width: 240px; }
+  .source-chips { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 16px; }
+  .source-chip { display: inline-flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; padding: 5px 12px; border-radius: 999px; background: var(--surface); border: 1px solid var(--border); color: var(--muted); }
+  .source-chip.on { color: var(--success); background: var(--success-soft); border-color: rgba(var(--success-rgb), .3); }
+  .segmented { display: inline-flex; border: 1px solid var(--border-strong); border-radius: var(--radius-sm); overflow: hidden; }
+  .segmented button { border: none; border-radius: 0; padding: 6px 14px; background: var(--surface); }
+  .segmented button + button { border-left: 1px solid var(--border-strong); }
+  .segmented button.active { background: var(--accent); color: #fff; }
+  .legend { display: inline-flex; gap: 16px; font-size: 12px; color: var(--muted); align-items: center; }
+  .legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; }
+  .chart-wrap { overflow-x: auto; }
+  .chart-wrap svg { display: block; }
+  .chart-wrap .grid-line { stroke: var(--border); stroke-width: 1; }
+  .chart-wrap text { fill: var(--muted); font-size: 11px; font-family: var(--font); }
+  .chart-wrap .bar-s { fill: var(--accent); }
+  .chart-wrap .bar-r { fill: var(--danger); }
+  .footnote { font-size: 12px; color: var(--muted); margin-top: 10px; }
+
+  /* ---------- Menu / modal / toast ---------- */
+  .menu-dropdown { position: relative; }
+  .menu-btn { padding: 7px 12px; }
+  .menu-panel { display: none; position: absolute; right: 0; top: calc(100% + 6px); min-width: 170px; background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--radius-sm); box-shadow: var(--shadow-lg); padding: 4px; z-index: 60; }
+  .menu-dropdown.open .menu-panel { display: block; }
+  .menu-item { padding: 9px 12px; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500; display: flex; align-items: center; gap: 10px; }
+  .menu-item:hover { background: var(--surface-2); }
+  .menu-item i { color: var(--muted); width: 16px; text-align: center; }
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(15,23,42,.55); z-index: 100; align-items: center; justify-content: center; padding: 20px; }
+  .modal-overlay.open { display: flex; }
+  .modal-box { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); box-shadow: var(--shadow-lg); width: min(860px, 100%); max-height: 88vh; overflow-y: auto; padding: 24px; position: relative; }
+  .modal-close { position: absolute; top: 14px; right: 14px; padding: 6px 9px; border: none; background: transparent; }
+  .about-text { white-space: pre-wrap; font-family: inherit; font-size: 13px; color: var(--text-2); line-height: 1.65; margin: 0; }
+  #toastHost { position: fixed; right: 20px; bottom: 20px; display: flex; flex-direction: column; gap: 10px; z-index: 200; }
+  .toast { background: var(--text); color: var(--surface); padding: 11px 16px; border-radius: var(--radius-sm); font-size: 13px; font-weight: 500; box-shadow: var(--shadow-lg); max-width: 380px; display: flex; gap: 10px; align-items: flex-start; animation: fadein .2s ease; }
+  .toast.error { background: var(--danger); color: #fff; }
+  .toast.success { background: var(--success); color: #fff; }
+
+  @media (max-width: 900px) {
+    .grid-2, .grid-form { grid-template-columns: 1fr; }
+    .topbar-inner, .container { padding-left: 14px; padding-right: 14px; }
+    .brand-sub, .hide-sm { display: none; }
+    .progress-steps { grid-template-columns: repeat(4, minmax(0, 1fr)); row-gap: 10px; }
+    .dropzone { flex-direction: column; align-items: flex-start; }
+  }
+  @media print { .topbar, .nav, .btn-row, .dropzone { display: none !important; } }
+</style>
+</head>
+<body>
+
+<header class="topbar">
+  <div class="topbar-inner">
+    <div class="brand">
+      <div class="brand-mark"><i class="fa-solid fa-right-left"></i></div>
+      <div style="min-width:0;">
+        <div class="brand-title">UC to SAP Order Upload Mapper</div>
+        <div class="brand-sub">Unicommerce to SAP &middot; Sales &amp; Return upload automation</div>
+      </div>
+    </div>
+    <div class="top-actions">
+      <button type="button" class="icon-btn on" id="soundQuickToggle" title="Toggle sound">
+        <i class="fa-solid fa-volume-high" id="soundQuickIcon"></i><span class="hide-sm" id="soundQuickLabel">Sound On</span>
+      </button>
+      <button type="button" class="icon-btn" id="themeToggle" title="Switch light / dark theme">
+        <i class="fa-solid fa-moon" id="themeIcon"></i><span class="hide-sm" id="themeLabel">Dark</span>
+      </button>
+    </div>
+  </div>
+</header>
+
+<div class="container">
+  <div class="nav">
+    <div class="nav-tabs">
+      <button class="tab-btn" data-tab="dashboard"><i class="fa-solid fa-chart-line"></i> Dashboard</button>
+      <button class="tab-btn active" data-tab="sales"><i class="fa-solid fa-cart-shopping"></i> Sales Upload</button>
+      <button class="tab-btn" data-tab="return"><i class="fa-solid fa-rotate-left"></i> Return Upload</button>
+    </div>
+    <div class="menu-dropdown" id="menuDropdown">
+      <button type="button" class="menu-btn" id="menuToggle"><i class="fa-solid fa-bars"></i> Menu</button>
+      <div class="menu-panel" id="menuPanel">
+        <div class="menu-item" data-modal="settings"><i class="fa-solid fa-gear"></i> Settings</div>
+        <div class="menu-item" data-modal="about"><i class="fa-regular fa-circle-question"></i> About</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="tab-dashboard">
+    <div class="page-head">
+      <div>
+        <h2>Dashboard</h2>
+        <p class="muted">Day-wise sales and return overview, built from the files you have generated in this session.</p>
+      </div>
+      <div class="dash-filters">
+        <div class="field-group"><label>Marketplace</label><div class="ms-dropdown" id="dashMarketplaceDropdown">
+          <button type="button" class="ms-toggle" id="dashMarketplaceToggle" aria-haspopup="listbox" aria-expanded="false">
+            <span class="ms-toggle-left"><i class="fa-solid fa-store"></i><span class="ms-toggle-text" id="dashMarketplaceToggleText">All marketplaces</span></span>
+            <span class="ms-caret"><i class="fa-solid fa-chevron-down"></i></span>
+          </button>
+          <div class="ms-panel" id="dashMarketplacePanel" role="listbox">
+            <div class="ms-chips" id="dashMarketplaceChips"></div>
+            <div class="ms-actions">
+              <button type="button" id="dashMarketplaceSelectAll"><i class="fa-solid fa-check-double"></i> Select All</button>
+              <button type="button" id="dashMarketplaceClearAll"><i class="fa-solid fa-xmark"></i> Clear All</button>
+            </div>
+            <div class="ms-options" id="dashMarketplaceOptions"></div>
+          </div>
+        </div></div>
+        <div class="field-group"><label>From</label><input type="date" id="dashFrom"></div>
+        <div class="field-group"><label>To</label><input type="date" id="dashTo"></div>
+        <button id="dashResetBtn"><i class="fa-solid fa-rotate-left"></i> Reset</button>
+        <button id="dashExportBtn" disabled><i class="fa-solid fa-file-excel"></i> Export day-wise</button>
+      </div>
+    </div>
+
+    <div class="source-chips">
+      <span class="source-chip" id="dashSalesChip"><i class="fa-solid fa-cart-shopping"></i> <span>Sales: no file generated yet</span></span>
+      <span class="source-chip" id="dashReturnChip"><i class="fa-solid fa-rotate-left"></i> <span>Returns: no file generated yet</span></span>
+    </div>
+
+    <div class="kpi-grid" id="dashKpis"></div>
+
+    <div class="panel" style="margin-top:18px;">
+      <div class="panel-head">
+        <div class="panel-title"><i class="fa-solid fa-chart-column"></i> Day-wise trend</div>
+        <div style="display:flex; gap:16px; align-items:center; flex-wrap:wrap;">
+          <span class="legend"><span><i style="background:var(--accent)"></i>Sales</span><span><i style="background:var(--danger)"></i>Returns</span></span>
+          <div class="segmented" id="dashMetricToggle"><button type="button" class="active" data-metric="amt">Amount</button><button type="button" data-metric="qty">Qty</button></div>
+        </div>
+      </div>
+      <div class="chart-wrap" id="dashChart"></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title"><i class="fa-solid fa-calendar-days"></i> Day-wise summary</div></div>
+      <div class="table-scroll" style="max-height:440px;"><table class="breakdown-table" id="dashDayTable"></table></div>
+      <p class="footnote">Sales Qty counts order lines (one per unit in the Unicommerce dump) and Sales Amount is the Total Price. Return Qty is the sum of the Qty column and Return Amount is the Total after other charges, as sent to SAP. Net = Sales &minus; Returns for the same day (returns may relate to earlier sales).</p>
+    </div>
+
+    <div class="grid-2">
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title"><i class="fa-solid fa-store"></i> By marketplace</div></div>
+        <div class="table-scroll" style="max-height:340px;"><table class="breakdown-table" id="dashMarketTable"></table></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title"><i class="fa-solid fa-location-dot"></i> Top states (sales)</div></div>
+        <div class="table-scroll" style="max-height:340px;"><table class="breakdown-table" id="dashStateTable"></table></div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title"><i class="fa-solid fa-boxes-stacked"></i> Top SKUs</div></div>
+      <div class="table-scroll" style="max-height:380px;"><table class="breakdown-table" id="dashSkuTable"></table></div>
+    </div>
+  </div>
+
+  <div class="tab-panel active" id="tab-sales">
+    <div class="page-head">
+      <div>
+        <h2>Sales Upload</h2>
+        <p class="muted">Generates the SAP sales upload using the built-in Unicommerce to SAP header mapping.</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title"><span class="step-badge">1</span> Choose marketplace &amp; source file</div></div>
+      <div class="field-row" style="margin-top:0;">
+        <label class="field-label"><i class="fa-solid fa-store"></i> Marketplace filter</label>
+        <div class="ms-dropdown" id="marketplaceDropdown">
+          <button type="button" class="ms-toggle" id="marketplaceToggle" aria-haspopup="listbox" aria-expanded="false">
+            <span class="ms-toggle-left"><i class="fa-solid fa-store"></i><span class="ms-toggle-text" id="marketplaceToggleText">All marketplaces</span></span>
+            <span class="ms-caret"><i class="fa-solid fa-chevron-down"></i></span>
+          </button>
+          <div class="ms-panel" id="marketplacePanel" role="listbox">
+            <div class="ms-chips" id="marketplaceChips"></div>
+            <div class="ms-actions">
+              <button type="button" id="marketplaceSelectAll"><i class="fa-solid fa-check-double"></i> Select All</button>
+              <button type="button" id="marketplaceClearAll"><i class="fa-solid fa-xmark"></i> Clear All</button>
+            </div>
+            <div class="ms-options" id="marketplaceOptions"></div>
+          </div>
+        </div>
+        <span class="live-hint"><i class="fa-solid fa-bolt"></i> Applies instantly to the summary, preview and download once a file is generated</span>
+      </div>
+      
+      <div class="section-label" style="margin-top:18px;"><i class="fa-solid fa-file-arrow-up"></i> Today's Unicommerce dump file (.csv or .xlsx)</div>
+      <div class="dropzone" id="salesDropzone" tabindex="0">
+        <div class="dropzone-left">
+          <div class="dropzone-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+          <div>
+            <span class="hint" id="salesHint">Drag &amp; drop a file here, or click to browse</span>
+            <div class="dropzone-sub">Accepts .csv, .xlsx, .xls, .xltx, .xlsm</div>
+          </div>
+        </div>
+        <button id="salesBrowseBtn" type="button"><i class="fa-solid fa-folder-open"></i> Browse</button>
+        <input type="file" id="salesFileInput" accept=".csv,.xlsx,.xls,.xltx,.xlsm" style="display:none;">
+      </div>
+      <div class="field-row" id="salesSheetRow" style="display:none;">
+        <label class="field-label"><i class="fa-solid fa-table-list"></i> Sheet</label>
+        <select id="salesSheetSelect"></select>
+      </div>
+      
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title"><span class="step-badge">2</span> Generate &amp; download</div></div>
+      <div class="btn-row">
+        <button class="primary" id="salesGenerateBtn"><i class="fa-solid fa-play"></i> Generate SAP Upload File</button>
+        <button id="salesDownloadBtn" disabled><i class="fa-solid fa-download"></i> Download SAP Upload File</button>
+        <button id="salesClearBtn"><i class="fa-solid fa-rotate-left"></i> Clear / Reset</button>
+      </div>
+      <div class="progress-wrap" id="salesProgressWrap">
+        <div class="progress-head"><span class="status-text" id="salesStatus">Ready</span><span class="progress-pct" id="salesPct">0%</span></div>
+        <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="salesTrack"><div class="progress-fill" id="salesProgressFill"></div></div>
+        <ol class="progress-steps" id="salesSteps">
+          <li>Uploading</li><li>Validating</li><li>Mapping</li><li>Processing</li><li>Reconciling</li><li>Finalizing</li><li>Complete</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title"><i class="fa-solid fa-gauge-high"></i> Input vs Output Summary <span class="muted" id="salesSummaryScope"></span></div></div>
+      <div class="card-grid">
+        <div class="card"><div class="card-icon"><i class="fa-solid fa-file-import"></i></div><div class="label">Input Qty</div><div class="value" id="salesInputQty">-</div></div>
+        <div class="card"><div class="card-icon"><i class="fa-solid fa-file-export"></i></div><div class="label">Output Qty</div><div class="value" id="salesOutputQty">-</div></div>
+        <div class="card"><div class="card-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div><div class="label">Input Value</div><div class="value" id="salesInputValue">-</div></div>
+        <div class="card"><div class="card-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div><div class="label">Output Value</div><div class="value" id="salesOutputValue">-</div></div>
+      </div>
+      <div class="match-indicator neutral" id="salesMatchIndicator"></div>
+      <div id="salesBreakdownWrap" style="display:none; margin-top:18px;">
+        <div class="section-label"><i class="fa-solid fa-chart-simple"></i> Marketplace Breakdown</div>
+        <div class="table-scroll"><table class="breakdown-table" id="salesBreakdownTable"></table></div>
+      </div>
+    </div>
+    <div class="reminder-box">
+      <div class="reminder-icon"><i class="fa-solid fa-lightbulb"></i></div>
+      <div>
+        <b>How RP Code works for Returns:</b> every Sales Upload run in this browser remembers each order/SKU's
+        Shipping Package Code, which is later used to resolve RP Code on the Return screen. Sales history is stored in
+        this browser only &mdash; use <b>Export / Import History</b> under Menu &rarr; Settings to move it between machines.
+      </div>
+    </div>
+    <div class="panel">
+      <div class="log-toggle" id="salesLogToggle"><i class="fa-solid fa-terminal"></i> Activity Log <span class="muted" id="salesLogToggleHint">(click to view)</span></div>
+      <div class="log-wrap" id="salesLogWrap"><div class="log" id="salesLog"></div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title"><i class="fa-solid fa-table"></i> Output Preview</div></div>
+      <div class="filter-bar">
+        <div class="field-group"><label>Filter field</label><select id="salesFilterField"><option value="">All fields</option></select></div>
+        <div class="field-group"><label>Filter value</label><input type="text" id="salesFilterValue" placeholder="Search value..."></div>
+        <button id="salesFilterApply"><i class="fa-solid fa-filter"></i> Apply</button>
+        <button id="salesFilterClear"><i class="fa-solid fa-xmark"></i> Clear</button>
+      </div>
+      <div class="filter-summary" id="salesFilterSummary"></div>
+      <div class="preview-scroll" id="salesPreviewScroll" style="max-height:600px;"><table class="preview" id="salesPreviewTable"></table></div>
+      <div class="pagination-bar" id="salesPaginationBar"></div>
+    </div>
+  </div>
+
+  <div class="tab-panel" id="tab-return">
+    <div class="page-head">
+      <div>
+        <h2>Return Upload</h2>
+        <p class="muted">Total = raw Total &minus; Other charges; Unit Price = raw Total / Qty; RP Code is looked up from Sales history.</p>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title"><span class="step-badge">1</span> Choose marketplace &amp; source file</div></div>
+      <div class="field-row" style="margin-top:0;">
+        <label class="field-label"><i class="fa-solid fa-store"></i> Marketplace filter</label>
+        <div class="ms-dropdown" id="returnMarketplaceDropdown">
+          <button type="button" class="ms-toggle" id="returnMarketplaceToggle" aria-haspopup="listbox" aria-expanded="false">
+            <span class="ms-toggle-left"><i class="fa-solid fa-store"></i><span class="ms-toggle-text" id="returnMarketplaceToggleText">All marketplaces</span></span>
+            <span class="ms-caret"><i class="fa-solid fa-chevron-down"></i></span>
+          </button>
+          <div class="ms-panel" id="returnMarketplacePanel" role="listbox">
+            <div class="ms-chips" id="returnMarketplaceChips"></div>
+            <div class="ms-actions">
+              <button type="button" id="returnMarketplaceSelectAll"><i class="fa-solid fa-check-double"></i> Select All</button>
+              <button type="button" id="returnMarketplaceClearAll"><i class="fa-solid fa-xmark"></i> Clear All</button>
+            </div>
+            <div class="ms-options" id="returnMarketplaceOptions"></div>
+          </div>
+        </div>
+        <span class="live-hint"><i class="fa-solid fa-bolt"></i> Applies instantly to the summary, preview and download once a file is generated</span>
+      </div>
+      <p class="muted">Filters by marketplace using the same order-number pattern matching as Sales, applied to "Sale Order Number".</p>
+      <div class="section-label" style="margin-top:18px;"><i class="fa-solid fa-file-arrow-up"></i> Today's Return dump file (.csv or .xlsx)</div>
+      <div class="dropzone" id="returnDropzone" tabindex="0">
+        <div class="dropzone-left">
+          <div class="dropzone-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+          <div>
+            <span class="hint" id="returnHint">Drag &amp; drop a file here, or click to browse</span>
+            <div class="dropzone-sub">Accepts .csv, .xlsx, .xls, .xltx, .xlsm</div>
+          </div>
+        </div>
+        <button id="returnBrowseBtn" type="button"><i class="fa-solid fa-folder-open"></i> Browse</button>
+        <input type="file" id="returnFileInput" accept=".csv,.xlsx,.xls,.xltx,.xlsm" style="display:none;">
+      </div>
+      <div class="field-row" id="returnSheetRow" style="display:none;">
+        <label class="field-label"><i class="fa-solid fa-table-list"></i> Sheet</label>
+        <select id="returnSheetSelect"></select>
+      </div>
+      
+      <div class="section-label" style="margin-top:20px;"><i class="fa-solid fa-file-circle-plus"></i> Optional Sales file (for RP Code lookup)</div>
+      <p class="muted" style="margin-bottom:10px;">Only needed if you haven't run Sales Upload for these orders in this browser yet. If provided, it takes priority over the stored Sales history for this run.</p>
+      <div class="dropzone" id="returnSalesDropzone" tabindex="0">
+        <div class="dropzone-left">
+          <div class="dropzone-icon"><i class="fa-solid fa-cloud-arrow-up"></i></div>
+          <div>
+            <span class="hint" id="returnSalesHint">Drag &amp; drop a Sales dump here, or click to browse (optional)</span>
+            <div class="dropzone-sub">Accepts .csv, .xlsx, .xls, .xltx, .xlsm</div>
+          </div>
+        </div>
+        <div style="display:flex; gap:8px;">
+          <button id="returnSalesBrowseBtn" type="button"><i class="fa-solid fa-folder-open"></i> Browse</button>
+          <button id="returnSalesClearFileBtn" type="button" style="display:none;"><i class="fa-solid fa-xmark"></i> Remove</button>
+        </div>
+        <input type="file" id="returnSalesFileInput" accept=".csv,.xlsx,.xls,.xltx,.xlsm" style="display:none;">
+      </div>
+      <div class="field-row" id="returnSalesSheetRow" style="display:none;">
+        <label class="field-label"><i class="fa-solid fa-table-list"></i> Sales file sheet</label>
+        <select id="returnSalesSheetSelect"></select>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title"><span class="step-badge">2</span> Generate &amp; download</div></div>
+      <div class="btn-row">
+        <button class="primary" id="returnGenerateBtn"><i class="fa-solid fa-play"></i> Generate Return SAP Upload File</button>
+        <button id="returnDownloadBtn" disabled><i class="fa-solid fa-download"></i> Download Return SAP Upload File</button>
+        <button id="returnClearBtn"><i class="fa-solid fa-rotate-left"></i> Clear / Reset</button>
+      </div>
+      <div class="progress-wrap" id="returnProgressWrap">
+        <div class="progress-head"><span class="status-text" id="returnStatus">Ready</span><span class="progress-pct" id="returnPct">0%</span></div>
+        <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" id="returnTrack"><div class="progress-fill" id="returnProgressFill"></div></div>
+        <ol class="progress-steps" id="returnSteps">
+          <li>Uploading</li><li>Validating</li><li>Mapping</li><li>Processing</li><li>Reconciling</li><li>Finalizing</li><li>Complete</li>
+        </ol>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title"><i class="fa-solid fa-gauge-high"></i> Input vs Output Summary <span class="muted" id="returnSummaryScope"></span></div></div>
+      <div class="card-grid">
+        <div class="card"><div class="card-icon"><i class="fa-solid fa-file-import"></i></div><div class="label">Input Qty</div><div class="value" id="returnInputQty">-</div></div>
+        <div class="card"><div class="card-icon"><i class="fa-solid fa-file-export"></i></div><div class="label">Output Qty</div><div class="value" id="returnOutputQty">-</div></div>
+        <div class="card"><div class="card-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div><div class="label">Input Value</div><div class="value" id="returnInputValue">-</div></div>
+        <div class="card"><div class="card-icon"><i class="fa-solid fa-indian-rupee-sign"></i></div><div class="label">Output Value</div><div class="value" id="returnOutputValue">-</div></div>
+      </div>
+      <div class="match-indicator neutral" id="returnMatchIndicator"></div>
+      <div id="returnBreakdownWrap" style="display:none; margin-top:18px;">
+        <div class="section-label"><i class="fa-solid fa-chart-simple"></i> Marketplace Breakdown</div>
+        <div class="table-scroll"><table class="breakdown-table" id="returnBreakdownTable"></table></div>
+      </div>
+    </div>
+    
+    <div class="panel">
+      <div class="log-toggle" id="returnLogToggle"><i class="fa-solid fa-terminal"></i> Activity Log <span class="muted" id="returnLogToggleHint">(click to view)</span></div>
+      <div class="log-wrap" id="returnLogWrap"><div class="log" id="returnLog"></div></div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-head"><div class="panel-title"><i class="fa-solid fa-table"></i> Output Preview</div></div>
+      <div class="filter-bar">
+        <div class="field-group"><label>Filter field</label><select id="returnFilterField"><option value="">All fields</option></select></div>
+        <div class="field-group"><label>Filter value</label><input type="text" id="returnFilterValue" placeholder="Search value..."></div>
+        <button id="returnFilterApply"><i class="fa-solid fa-filter"></i> Apply</button>
+        <button id="returnFilterClear"><i class="fa-solid fa-xmark"></i> Clear</button>
+      </div>
+      <div class="filter-summary" id="returnFilterSummary"></div>
+      <div class="preview-scroll" id="returnPreviewScroll" style="max-height:600px;"><table class="preview" id="returnPreviewTable"></table></div>
+      <div class="pagination-bar" id="returnPaginationBar"></div>
+    </div>
+  </div>
+
+  <!-- SETTINGS / ABOUT (moved into modal by script) -->
+  <div class="tab-panel" id="tab-settings">
+    <h2 style="font-size:18px; margin-bottom:4px;"><i class="fa-solid fa-gear"></i> Settings</h2>
+    <div class="muted">Saved automatically in this browser.</div>
+
+    <div class="checkbox-row" style="margin-top:16px;">
+      <input type="checkbox" id="soundToggle">
+      <label for="soundToggle">Play sound on key steps (start, progress, done, error, clicks)</label>
+    </div>
+
+    <div class="section-label" style="margin-top:24px;"><i class="fa-solid fa-clock-rotate-left"></i> Sales History (for Return RP Code lookup)</div>
+    <div class="muted" id="historyStatus">0 order/SKU entries stored in this browser.</div>
+    <div class="btn-row" style="margin-top:10px;">
+      <button id="exportHistoryBtn"><i class="fa-solid fa-file-export"></i> Export History</button>
+      <button id="importHistoryBtn"><i class="fa-solid fa-file-import"></i> Import History</button>
+      <input type="file" id="importHistoryInput" accept=".json" style="display:none;">
+      <button id="clearHistoryBtn"><i class="fa-solid fa-trash"></i> Clear Sales History</button>
+    </div>
+
+    <div class="section-label" style="margin-top:24px;"><i class="fa-solid fa-diagram-project"></i> Mapping</div>
+    <div class="field-row" style="margin-top:0;">
+      <label class="field-label">Mapping version</label>
+      <select id="mappingProfileSelect"></select>
+    </div>
+    <div class="table-scroll" style="max-height:320px;"><table class="breakdown-table" id="mappingTable"></table></div>
+    <div class="muted" id="mappingInfo" style="margin-top:8px;"></div>
+  </div>
+
+  <div class="tab-panel" id="tab-about">
+    <h2 style="font-size:18px; margin-bottom:10px;"><i class="fa-regular fa-circle-question"></i> About</h2>
+    <pre class="about-text" id="aboutText"></pre>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal-box" id="modalBox">
+    <button type="button" class="modal-close" id="modalCloseBtn" aria-label="Close"><i class="fa-solid fa-xmark"></i></button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+<div id="toastHost" aria-live="polite"></div>
+
+<script>
+// ============================================================================
+// UC to SAP Order Upload Mapper - Core Logic (no DOM dependencies)
+// Testable standalone with Node.js; also embedded directly in index.html.
+// UNCHANGED FROM ORIGINAL — do not modify calculations/mappings/validations here.
+// ============================================================================
+
+// ---- Sales header mapping (SAP field -> Unicommerce column name) ----------
+const MAPPING_DATA = [
+  ["PORTAL_ID", "Display Order Code"],
+  ["PORT_SORDER", "Sale Order Code"],
+  ["SPACK_CODE", "Shipping Package Code"],
+  ["MATNR", "Item SKU Code"],
+  ["ORDER_DATE", "Order Date as dd/mm/yyyy hh:MM:ss"],
+  ["CHANNEL", "Channel Name"],
+  ["SHIP_PROVIDER", "Shipping provider"],
+  ["SHIP_COURIER", "Shipping Courier"],
+  ["ZTERM", "COD"],
+  ["POSTAL_CODE", "Shipping Address Pincode"],
+  ["MAKTX", "Item Type Name"],
+  ["MRP", "MRP"],
+  ["DISC", "Discount"],
+  ["SALE_PRICE", "Selling Price"],
+  ["ORD_SHP_CRG", "Shipping Charges"],
+  ["ORD_COD_CRG", "COD Service Charges"],
+  ["ORD_TOT", "Total Price"],
+  ["SPACK_STATUS", "Shipping Package Status Code"],
+  ["SPACK_SORDER", "Shipping Package Code"],
+  ["SPACK_TYPE", "Shipping Method"],
+  ["PAYMENT_GATEWAY", "Gateway"],
+  ["CUSTOMER_GSTIN", null],
+  ["ORIG_INVOICE", "Invoice Code"],
+  ["FACILITY", "Facility"],
+  ["AWB_NUMBER", "Tracking Number"],
+  ["DISPATCH_DATE", "Dispatch Date"],
+  ["SALES_ORD_ITEM_CODE", null],
+  ["SHP_ADR_STATE", "Shipping Address State"],
+  ["CITY", "Shipping Address City"],
+  ["SHP_METHOD", null],
+  ["CHARG", "Batch Code"],
+  ["VEN_BATCH_NUM", "Vendor Batch Number"],
+  ["CURRENCY", "Currency"],
+  ["GATEWAY_REF", "x_gateway_reference"],
+  ["TRANSID", "x_reference"],
+];
+
+// ---- Value overrides (SPACK_STATUS: RETURNED/RETURN_EXPECTED -> Shipped) --
+// SHP_ADR_STATE: normalizes UC's full state name to the exact SAP-expected
+// state name/code for Dadra & Nagar Haveli and Daman & Diu (applies uniformly
+// to every row, regardless of marketplace/channel, since it runs inside
+// buildOutputRows' per-row formatting after any marketplace filtering).
+const VALUE_OVERRIDES = {
+  SPACK_STATUS: { RETURNED: "Shipped", RETURN_EXPECTED: "Shipped" },
+  SHP_ADR_STATE: {
+    // Template requires the full state name (no truncation); common spellings are normalised to it.
+    "DADRA AND NAGAR HAVELI AND DAMAN AND DIU": "DADRA AND NAGAR HAVELI AND DAMAN AND DIU",
+    "DADRA AND NAGAR HAVELI": "DADRA AND NAGAR HAVELI AND DAMAN AND DIU",
+    "DADRA & NAGAR HAVELI": "DADRA AND NAGAR HAVELI AND DAMAN AND DIU",
+    "DADRA & NAGAR HAVELI & DAMAN & DIU": "DADRA AND NAGAR HAVELI AND DAMAN AND DIU",
+    "DADRA AND NAGAR": "DADRA AND NAGAR HAVELI AND DAMAN AND DIU",
+  },
+};
+
+// ---- Channel detection (matched against Display Order Code) ---------------
+const CHANNEL_PATTERNS = [
+  ["Amazon", /^[14]\d{2}-\d{7}-\d{7}$/],
+  ["Zandu Care", /^ZN/i],
+  ["Kiosk", /^SO/i],
+  ["Flipkart", /^OD/i],
+  ["JioMart", /^JM/i],
+  ["Kesh-King", /^KK/i],
+  ["Dpanda", /^\d{4,5}$/],
+];
+
+function detectChannel(orderId) {
+  if (orderId === null || orderId === undefined) return "Unknown";
+  const s = String(orderId).trim();
+  if (!s) return "Unknown";
+  for (const [name, pattern] of CHANNEL_PATTERNS) {
+    if (pattern.test(s)) return name;
+  }
+  return "Other";
+}
+
+function filterRowsByChannel(headerIndex, dataRows, channelName, orderIdCol = "Display Order Code") {
+  const idx = headerIndex[norm(orderIdCol)];
+  if (idx === undefined) {
+    throw new Error(`Column '${orderIdCol}' not found in the dump - cannot filter by channel.`);
+  }
+  return dataRows.filter((row) => detectChannel(row[idx]) === channelName);
+}
+
+// ---- NEW (additive): filter by multiple channels at once, for the
+// multi-select marketplace dropdown. Does not alter filterRowsByChannel above. --
+function filterRowsByChannels(headerIndex, dataRows, channelNames, orderIdCol = "Display Order Code") {
+  const idx = headerIndex[norm(orderIdCol)];
+  if (idx === undefined) {
+    throw new Error(`Column '${orderIdCol}' not found in the dump - cannot filter by channel.`);
+  }
+  const wanted = new Set(channelNames);
+  return dataRows.filter((row) => wanted.has(detectChannel(row[idx])));
+}
+
+// ---- Generic helpers --------------------------------------------------------
+function norm(s) {
+  return String(s == null ? "" : s).trim().toLowerCase();
+}
+
+function coerceValue(raw) {
+  if (raw === null || raw === undefined) return null;
+  const s = String(raw).trim();
+  if (s === "") return null;
+  if (s instanceof Date) return s;
+  const f = Number(s);
+  if (!Number.isNaN(f) && s.match(/^-?\d+(\.\d+)?$/)) {
+    return s.includes(".") ? f : Math.trunc(f);
+  }
+  return s;
+}
+
+// ---- CSV parsing (handles quoted fields, embedded commas/newlines) --------
+function parseCSV(text) {
+  // Strip BOM
+  if (text.charCodeAt(0) === 0xfeff) text = text.slice(1);
+  const rows = [];
+  let row = [];
+  let field = "";
+  let inQuotes = false;
+  let i = 0;
+  const n = text.length;
+  while (i < n) {
+    const ch = text[i];
+    if (inQuotes) {
+      if (ch === '"') {
+        if (text[i + 1] === '"') {
+          field += '"';
+          i += 2;
+          continue;
+        }
+        inQuotes = false;
+        i++;
+        continue;
+      }
+      field += ch;
+      i++;
+      continue;
+    }
+    if (ch === '"') {
+      inQuotes = true;
+      i++;
+      continue;
+    }
+    if (ch === ",") {
+      row.push(field);
+      field = "";
+      i++;
+      continue;
+    }
+    if (ch === "\r") {
+      i++;
+      continue;
+    }
+    if (ch === "\n") {
+      row.push(field);
+      rows.push(row);
+      row = [];
+      field = "";
+      i++;
+      continue;
+    }
+    field += ch;
+    i++;
+  }
+  if (field !== "" || row.length > 0) {
+    row.push(field);
+    rows.push(row);
+  }
+  return rows;
+}
+
+function buildHeaderIndex(headers) {
+  const idx = {};
+  headers.forEach((h, i) => {
+    if (h === null || h === undefined) return;
+    const key = norm(h);
+    if (key && !(key in idx)) idx[key] = i;
+  });
+  return idx;
+}
+
+function readDumpFromRows(rawRows) {
+  if (!rawRows.length) throw new Error("The file appears to be empty.");
+  const headers = rawRows[0];
+  const headerIndex = buildHeaderIndex(headers);
+  const dataRows = [];
+  for (let r = 1; r < rawRows.length; r++) {
+    const row = rawRows[r];
+    if (row.some((v) => v !== null && v !== undefined && String(v).trim() !== "")) {
+      dataRows.push(row.map(coerceValue));
+    }
+  }
+  return { headerIndex, dataRows };
+}
+
+function readDumpCSV(text) {
+  const rawRows = parseCSV(text);
+  return readDumpFromRows(rawRows);
+}
+
+// ---- Date formatting (dd-mm-yyyy hh:mm:ss) ---------------------------------
+const DATE_FIELDS = new Set(["ORDER_DATE", "DISPATCH_DATE"]);
+
+function pad2(n) {
+  return String(n).padStart(2, "0");
+}
+
+function formatDateFromExcelSerial(serial) {
+  // Excel date serial (days since 1899-12-30), may include fractional day = time
+  const epoch = Date.UTC(1899, 11, 30);
+  const ms = epoch + serial * 86400000;
+  const d = new Date(ms);
+  return `${pad2(d.getUTCDate())}-${pad2(d.getUTCMonth() + 1)}-${d.getUTCFullYear()} ${pad2(d.getUTCHours())}:${pad2(d.getUTCMinutes())}:${pad2(d.getUTCSeconds())}`;
+}
+
+function formatDateValue(value) {
+  if (value === null || value === undefined) return null;
+  if (value instanceof Date) {
+    return `${pad2(value.getDate())}-${pad2(value.getMonth() + 1)}-${value.getFullYear()} ${pad2(value.getHours())}:${pad2(value.getMinutes())}:${pad2(value.getSeconds())}`;
+  }
+  if (typeof value === "number") {
+    // Excel serial date number
+    return formatDateFromExcelSerial(value);
+  }
+  const s = String(value).trim();
+  if (!s) return null;
+  // Try dd-mm-yyyy or dd/mm/yyyy, with optional hh:mm[:ss]
+  const m = s.match(/^(\d{1,2})[-/](\d{1,2})[-/](\d{4})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+  if (m) {
+    const [, dd, mm, yyyy, hh = "0", mi = "0", ss = "0"] = m;
+    return `${pad2(dd)}-${pad2(mm)}-${yyyy} ${pad2(hh)}:${pad2(mi)}:${pad2(ss)}`;
+  }
+  const m2 = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})(?:\s+(\d{1,2}):(\d{2})(?::(\d{2}))?)?$/);
+  if (m2) {
+    const [, yyyy, mm, dd, hh = "0", mi = "0", ss = "0"] = m2;
+    return `${pad2(dd)}-${pad2(mm)}-${yyyy} ${pad2(hh)}:${pad2(mi)}:${pad2(ss)}`;
+  }
+  return s; // unrecognized format - leave as-is rather than lose data
+}
+
+function applyValueOverride(sapHeader, value) {
+  const overrides = VALUE_OVERRIDES[sapHeader];
+  if (!overrides || value === null || value === undefined) return value;
+  const key = String(value).trim().replace(/\s+/g, " ").toUpperCase();
+  return key in overrides ? overrides[key] : value;
+}
+
+function formatOutputValue(sapHeader, value) {
+  if (DATE_FIELDS.has(sapHeader)) return formatDateValue(value);
+  value = applyValueOverride(sapHeader, value);
+  if (value instanceof Date) return formatDateValue(value);
+  return value;
+}
+
+// ---- Sales output ------------------------------------------------------------
+const GIFT_WRAP_CHARGES_COL = "Gift Wrap Charges";
+
+function buildOutputRows(headerIndex, dataRows) {
+  const warnings = [];
+  const seenMissing = new Set();
+  const outputRows = [];
+  const giftWrapIdx = headerIndex[norm(GIFT_WRAP_CHARGES_COL)];
+  let giftWrapFoldedCount = 0;
+
+  for (const row of dataRows) {
+    const outRow = [];
+    for (const [sapHeader, ucHeader] of MAPPING_DATA) {
+      if (ucHeader === null) {
+        outRow.push(null);
+        continue;
+      }
+      const key = norm(ucHeader);
+      const idx = headerIndex[key];
+      if (idx === undefined) {
+        if (!seenMissing.has(key)) {
+          warnings.push(
+            `Column not found in dump for SAP field '${sapHeader}' (expected Unicommerce header: '${ucHeader}') - left blank for all rows.`
+          );
+          seenMissing.add(key);
+        }
+        outRow.push(null);
+      } else {
+        let val = idx < row.length ? row[idx] : null;
+        // There is no dedicated SAP field for Gift Wrap Charges, so fold it
+        // into Shipping Charges (ORD_SHP_CRG) instead of losing it.
+        if (sapHeader === "ORD_SHP_CRG" && giftWrapIdx !== undefined) {
+          const giftWrapVal = giftWrapIdx < row.length ? row[giftWrapIdx] : null;
+          const giftWrapAmount = toNumber(giftWrapVal);
+          if (giftWrapAmount) {
+            val = toNumber(val) + giftWrapAmount;
+            giftWrapFoldedCount++;
+          }
+        }
+        outRow.push(formatOutputValue(sapHeader, val));
+      }
+    }
+    outputRows.push(outRow);
+  }
+  if (giftWrapFoldedCount) {
+    warnings.push(
+      `Gift Wrap Charges had no dedicated SAP field, so it was added into Shipping Charges (ORD_SHP_CRG) for ${giftWrapFoldedCount} row(s).`
+    );
+  }
+  return { outputRows, warnings };
+}
+
+function sapHeaders() {
+  return MAPPING_DATA.map(([sap]) => sap);
+}
+
+function toNumber(v) {
+  if (v === null || v === undefined) return 0;
+  if (typeof v === "number") return v;
+  const f = parseFloat(String(v).replace(/,/g, ""));
+  return Number.isNaN(f) ? 0 : f;
+}
+
+const DASHBOARD_INPUT_VALUE_COLUMN = "Total Price";
+const DASHBOARD_OUTPUT_VALUE_FIELD = "ORD_TOT";
+
+function sumInputValue(headerIndex, rows, colName = DASHBOARD_INPUT_VALUE_COLUMN) {
+  const idx = headerIndex[norm(colName)];
+  if (idx === undefined) return null;
+  return rows.reduce((acc, row) => acc + toNumber(idx < row.length ? row[idx] : null), 0);
+}
+
+function sumOutputValue(outputRows, sapField = DASHBOARD_OUTPUT_VALUE_FIELD) {
+  const idx = sapHeaders().indexOf(sapField);
+  if (idx === -1) return null;
+  return outputRows.reduce((acc, row) => acc + toNumber(row[idx]), 0);
+}
+
+// ---- Sales history (Order||SKU -> Shipping Package Code) ------------------
+const SALES_HISTORY_ORDER_COL = "Display Order Code";
+const SALES_HISTORY_SKU_COL = "Item SKU Code";
+const SALES_HISTORY_RP_COL = "Shipping Package Code";
+
+function historyKey(order, sku) {
+  return `${String(order).trim()}||${String(sku).trim()}`;
+}
+
+function buildHistoryUpdates(headerIndex, dataRows) {
+  const orderIdx = headerIndex[norm(SALES_HISTORY_ORDER_COL)];
+  const skuIdx = headerIndex[norm(SALES_HISTORY_SKU_COL)];
+  const rpIdx = headerIndex[norm(SALES_HISTORY_RP_COL)];
+  if (orderIdx === undefined || skuIdx === undefined || rpIdx === undefined) return {};
+  const updates = {};
+  for (const row of dataRows) {
+    const order = orderIdx < row.length ? row[orderIdx] : null;
+    const sku = skuIdx < row.length ? row[skuIdx] : null;
+    const rp = rpIdx < row.length ? row[rpIdx] : null;
+    if (!order || !sku || !rp || !String(rp).trim()) continue;
+    updates[historyKey(order, sku)] = String(rp).trim();
+  }
+  return updates;
+}
+
+// ---- Return template mapping -----------------------------------------------
+const RETURN_DIRECT_MAPPING = [
+  ["Date", "Date"],
+  ["Sale Order Number", "Sale Order Number"],
+  ["Product SKU Code", "Product SKU Code"],
+  ["Qty", "Qty"],
+  ["Currency", "Currency"],
+  ["Other charges", "Other charges"],
+  ["Other charges Ledger", "Other charges Ledger"],
+  ["Other charges1", "Other charges1"],
+  ["Other charges Ledger1", "Other charges Ledger1"],
+  ["Discount Amount", "Discount Amount"],
+];
+const RETURN_TOTAL_SOURCE_COL = "Total";
+const RETURN_QTY_COL = "Qty";
+
+const RETURN_OUTPUT_COLUMNS = [
+  "Date", "Sale Order Number", "Product SKU Code", "Qty", "Total", "Currency",
+  "Unit Price", "Other charges", "Other charges Ledger", "Other charges1",
+  "Other charges Ledger1", "Discount Amount", "RP Code",
+  "Raw Total (from UC Return Dump)",
+];
+
+function buildReturnOutputRows(headerIndex, dataRows, salesHistory) {
+  const warnings = [];
+  const seenMissing = new Set();
+  let missingRpCount = 0;
+  let giftWrapRelabeledCount = 0;
+  const outputRows = [];
+
+  function get(row, colName) {
+    const idx = headerIndex[norm(colName)];
+    if (idx === undefined) {
+      if (!seenMissing.has(colName)) {
+        warnings.push(`Column '${colName}' not found in the Return dump - left blank for all rows.`);
+        seenMissing.add(colName);
+      }
+      return null;
+    }
+    return idx < row.length ? row[idx] : null;
+  }
+
+  // There is no dedicated "Gift Wrap" ledger in the SAP Return template, so
+  // any Other charges ledger labeled Gift Wrap is relabeled as Shipping
+  // Charges instead - the amount itself is untouched, it already flows
+  // through the existing Total = raw Total - Other charges - Other charges1
+  // calculation regardless of its ledger label.
+  function relabelGiftWrap(ledgerValue) {
+    if (ledgerValue !== null && ledgerValue !== undefined && /gift\s*wrap/i.test(String(ledgerValue))) {
+      giftWrapRelabeledCount++;
+      return "Shipping Charges";
+    }
+    return ledgerValue;
+  }
+
+  for (const row of dataRows) {
+    const out = {};
+    for (const [templateCol, dumpCol] of RETURN_DIRECT_MAPPING) {
+      out[templateCol] = get(row, dumpCol);
+    }
+    out["Other charges Ledger"] = relabelGiftWrap(out["Other charges Ledger"]);
+    out["Other charges Ledger1"] = relabelGiftWrap(out["Other charges Ledger1"]);
+
+    const rawTotal = toNumber(get(row, RETURN_TOTAL_SOURCE_COL));
+    const qty = toNumber(get(row, RETURN_QTY_COL));
+    const other1 = toNumber(out["Other charges"]);
+    const other2 = toNumber(out["Other charges1"]);
+
+    out["Total"] = Math.round((rawTotal - (other1 + other2)) * 100) / 100;
+    out["Unit Price"] = qty ? Math.round((rawTotal / qty) * 100) / 100 : null;
+    out["Raw Total (from UC Return Dump)"] = rawTotal;
+
+    const orderVal = out["Sale Order Number"];
+    const skuVal = out["Product SKU Code"];
+    const rpCode = salesHistory[historyKey(orderVal, skuVal)];
+    if (rpCode === undefined) {
+      missingRpCount++;
+      out["RP Code"] = null;
+    } else {
+      out["RP Code"] = rpCode;
+    }
+
+    outputRows.push(RETURN_OUTPUT_COLUMNS.map((c) => (out[c] === undefined ? null : out[c])));
+  }
+
+  if (giftWrapRelabeledCount) {
+    warnings.push(
+      `Gift Wrap has no dedicated ledger in the Return template, so it was relabeled as Shipping Charges for ${giftWrapRelabeledCount} row(s) (amount unchanged).`
+    );
+  }
+  if (missingRpCount) {
+    warnings.push(
+      `RP Code could not be found in Sales history for ${missingRpCount} row(s) - left blank. ` +
+      `This happens if the matching Sales file was never processed in this browser.`
+    );
+  }
+  return { outputRows, warnings };
+}
+
+
+// ============================================================================
+// UI wiring (restyled). All calculations/mappings above are the original core.
+// ============================================================================
+const LS_THEME = "uc_sap_theme";
+const LS_SOUND = "uc_sap_sound_on";
+const LS_HISTORY = "uc_sap_sales_history";
+
+// ---- Shared in-memory data used by the Dashboard ---------------------------
+const appData = { sales: null, ret: null };
+
+// ---- Small UI utilities -----------------------------------------------------
+function esc(s) {
+  return String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+}
+function fmtInt(n) { return n == null ? "-" : Number(n).toLocaleString("en-IN"); }
+function fmtMoney(n) {
+  return n == null ? "-" : Number(n).toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+}
+function debounce(fn, ms) {
+  let t = null;
+  return (...a) => { clearTimeout(t); t = setTimeout(() => fn(...a), ms); };
+}
+function notify(msg, type) {
+  const host = document.getElementById("toastHost");
+  if (!host) { console.log(msg); return; }
+  const t = document.createElement("div");
+  t.className = "toast" + (type ? " " + type : "");
+  t.innerHTML = `<i class="fa-solid ${type === "error" ? "fa-circle-exclamation" : type === "success" ? "fa-circle-check" : "fa-circle-info"}"></i><span>${esc(msg)}</span>`;
+  host.appendChild(t);
+  setTimeout(() => { t.style.opacity = "0"; t.style.transition = "opacity .3s"; setTimeout(() => t.remove(), 320); }, type === "error" ? 6000 : 3500);
+}
+
+// ---- Storage helpers --------------------------------------------------------
+function loadHistory() {
+  try {
+    const raw = localStorage.getItem(LS_HISTORY);
+    return raw ? JSON.parse(raw) : {};
+  } catch (e) {
+    return {};
+  }
+}
+function saveHistory(history) {
+  try {
+    localStorage.setItem(LS_HISTORY, JSON.stringify(history));
+  } catch (e) {
+    console.error("Could not save Sales history:", e);
+  }
+}
+function mergeHistory(updates) {
+  const history = loadHistory();
+  let changed = 0;
+  for (const [key, val] of Object.entries(updates)) {
+    if (history[key] !== val) {
+      history[key] = val;
+      changed++;
+    }
+  }
+  if (changed) saveHistory(history);
+  return changed;
+}
+
+// ---- Sound (Web Audio API - no external files needed) ---------------------
+// Subtle, short click/feedback sounds. Lazily created on first user gesture
+// to respect browser autoplay restrictions. Toggle persists during the session
+// (and across sessions via localStorage, same as before).
+let audioCtx = null;
+let audioUnlocked = false;
+function ensureAudio() {
+  if (!audioCtx) {
+    try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; }
+  }
+  if (audioCtx && audioCtx.state === "suspended") {
+    audioCtx.resume().catch(() => {});
+  }
+  return audioCtx;
+}
+document.addEventListener("click", function unlockOnce() {
+  audioUnlocked = true;
+  ensureAudio();
+  document.removeEventListener("click", unlockOnce);
+}, { once: true });
+
+function soundEnabled() {
+  const t = document.getElementById("soundToggle");
+  return t ? t.checked : true;
+}
+
+function beep(freq, durationMs, type) {
+  if (!soundEnabled()) return;
+  try {
+    const ctx = ensureAudio();
+    if (!ctx) return;
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.frequency.value = freq;
+    osc.type = type || "sine";
+    gain.gain.setValueAtTime(0.07, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + durationMs / 1000);
+    osc.connect(gain).connect(ctx.destination);
+    osc.start();
+    osc.stop(ctx.currentTime + durationMs / 1000);
+  } catch (e) { /* ignore - some browsers block audio until user interaction */ }
+}
+
+// Debounce identical rapid-fire sounds (e.g. during animation loops) so the
+// app never becomes noisy/annoying even if a caller fires the same event twice.
+let lastSoundAt = {};
+function playSound(event) {
+  const now = Date.now();
+  if (lastSoundAt[event] && now - lastSoundAt[event] < 70) return;
+  lastSoundAt[event] = now;
+  if (event === "start") beep(660, 90);
+  else if (event === "step") beep(880, 55);
+  else if (event === "success") beep(1046, 170);
+  else if (event === "error") beep(220, 220, "square");
+  else if (event === "click") beep(520, 35);
+  else if (event === "open") beep(720, 45);
+  else if (event === "close") beep(480, 45);
+  else if (event === "check") beep(920, 40);
+  else if (event === "uncheck") beep(400, 40);
+  else if (event === "theme") beep(760, 80);
+  else if (event === "upload") beep(600, 70);
+}
+
+
+// ---- Theme (light / dark) ---------------------------------------------------
+function applyTheme(name, opts = {}) {
+  const dark = name === "dark";
+  document.documentElement.setAttribute("data-theme", dark ? "dark" : "");
+  document.getElementById("themeIcon").className = dark ? "fa-solid fa-sun" : "fa-solid fa-moon";
+  document.getElementById("themeLabel").textContent = dark ? "Light" : "Dark";
+  try { localStorage.setItem(LS_THEME, dark ? "dark" : "light"); } catch (e) {}
+  if (!opts.silent) playSound("theme");
+}
+document.getElementById("themeToggle").addEventListener("click", () => {
+  applyTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
+  dashboardRefresh(true);
+});
+applyTheme(localStorage.getItem(LS_THEME) === "dark" ? "dark" : "light", { silent: true });
+
+// ---- Sound toggle -----------------------------------------------------------
+const soundToggleEl = document.getElementById("soundToggle");
+const soundQuickToggleEl = document.getElementById("soundQuickToggle");
+const soundQuickLabelEl = document.getElementById("soundQuickLabel");
+const soundQuickIconEl = document.getElementById("soundQuickIcon");
+soundToggleEl.checked = localStorage.getItem(LS_SOUND) !== "false";
+function syncSoundUI() {
+  soundQuickToggleEl.classList.toggle("on", soundToggleEl.checked);
+  soundQuickLabelEl.textContent = soundToggleEl.checked ? "Sound On" : "Sound Off";
+  soundQuickIconEl.className = soundToggleEl.checked ? "fa-solid fa-volume-high" : "fa-solid fa-volume-xmark";
+}
+syncSoundUI();
+soundToggleEl.addEventListener("change", () => {
+  localStorage.setItem(LS_SOUND, soundToggleEl.checked ? "true" : "false");
+  syncSoundUI();
+  if (soundToggleEl.checked) beep(700, 50);
+});
+soundQuickToggleEl.addEventListener("click", () => {
+  soundToggleEl.checked = !soundToggleEl.checked;
+  soundToggleEl.dispatchEvent(new Event("change"));
+});
+
+// ---- Tabs (Dashboard / Sales / Return) --------------------------------------
+document.querySelectorAll(".tab-btn").forEach((btn) => {
+  btn.addEventListener("click", () => {
+    playSound("click");
+    document.querySelectorAll(".tab-btn").forEach((b) => b.classList.remove("active"));
+    document.querySelectorAll(".tab-panel").forEach((p) => {
+      if (p.id === "tab-sales" || p.id === "tab-return" || p.id === "tab-dashboard") p.classList.remove("active");
+    });
+    btn.classList.add("active");
+    document.getElementById("tab-" + btn.dataset.tab).classList.add("active");
+    if (btn.dataset.tab === "dashboard") dashboardRefresh();
+  });
+});
+
+// ---- Menu + Settings/About modal --------------------------------------------
+(function menuInit() {
+  const menuDropdown = document.getElementById("menuDropdown");
+  const menuToggle = document.getElementById("menuToggle");
+  const overlay = document.getElementById("modalOverlay");
+  const settingsPanel = document.getElementById("tab-settings");
+  const aboutPanel = document.getElementById("tab-about");
+  const modalContent = document.getElementById("modalContent");
+  modalContent.appendChild(settingsPanel);
+  modalContent.appendChild(aboutPanel);
+  settingsPanel.style.display = "none";
+  aboutPanel.style.display = "none";
+
+  menuToggle.addEventListener("click", (e) => {
+    e.stopPropagation();
+    const willOpen = !menuDropdown.classList.contains("open");
+    menuDropdown.classList.toggle("open", willOpen);
+    playSound(willOpen ? "open" : "close");
+  });
+  document.addEventListener("click", (e) => {
+    if (!menuDropdown.contains(e.target)) menuDropdown.classList.remove("open");
+  });
+  function openModal(which) {
+    settingsPanel.style.display = which === "settings" ? "block" : "none";
+    aboutPanel.style.display = which === "about" ? "block" : "none";
+    overlay.classList.add("open");
+    playSound("open");
+  }
+  function closeModal() {
+    if (!overlay.classList.contains("open")) return;
+    overlay.classList.remove("open");
+    playSound("close");
+  }
+  document.querySelectorAll(".menu-item").forEach((item) => {
+    item.addEventListener("click", () => {
+      playSound("click");
+      menuDropdown.classList.remove("open");
+      openModal(item.dataset.modal);
+    });
+  });
+  document.getElementById("modalCloseBtn").addEventListener("click", closeModal);
+  overlay.addEventListener("click", (e) => { if (e.target === overlay) closeModal(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
+})();
+
+// ---- Collapsible log panels -------------------------------------------------
+function wireLogToggle(toggleId, wrapId, hintId) {
+  const toggle = document.getElementById(toggleId);
+  const wrap = document.getElementById(wrapId);
+  const hint = document.getElementById(hintId);
+  toggle.addEventListener("click", () => {
+    playSound("click");
+    const open = wrap.classList.toggle("open");
+    hint.textContent = open ? "(click to hide)" : "(click to view)";
+  });
+}
+wireLogToggle("salesLogToggle", "salesLogWrap", "salesLogToggleHint");
+wireLogToggle("returnLogToggle", "returnLogWrap", "returnLogToggleHint");
+
+// ---- Per-tab Input/Output summary + match indicator -------------------------
+function updateSummaryCards(prefix, inputQty, outputQty, inputValue, outputValue) {
+  document.getElementById(prefix + "InputQty").textContent = inputQty ?? "-";
+  document.getElementById(prefix + "OutputQty").textContent = outputQty ?? "-";
+  document.getElementById(prefix + "InputValue").textContent = inputValue != null
+    ? inputValue.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "-";
+  document.getElementById(prefix + "OutputValue").textContent = outputValue != null
+    ? outputValue.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : "-";
+}
+
+function updateMatchIndicator(prefix, inputQty, outputQty, inputValue, outputValue, opts = {}) {
+  const el = document.getElementById(prefix + "MatchIndicator");
+  const qtyMatch = inputQty === outputQty || opts.qtyFiltered;
+
+  if (opts.qtyFiltered) {
+    el.textContent = `Filter applied: ${outputQty} of ${inputQty} input rows kept.`;
+    el.className = "match-indicator neutral";
+    return;
+  }
+  if (opts.mode === "RETURN") {
+    if (qtyMatch) {
+      const diff = inputValue != null && outputValue != null ? inputValue - outputValue : null;
+      let msg = "Qty matches the input dump";
+      if (diff != null) msg += ` (value differs by ${diff.toLocaleString("en-IN", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} - expected, due to other charges deducted)`;
+      el.textContent = msg;
+      el.className = "match-indicator ok";
+    } else {
+      el.textContent = "Qty mismatch - check warnings in the log";
+      el.className = "match-indicator warn";
+    }
+    return;
+  }
+  const valueMatch = inputValue == null || outputValue == null || Math.abs(inputValue - outputValue) < 0.01;
+  if (qtyMatch && valueMatch) {
+    el.textContent = "Qty and value match the input dump";
+    el.className = "match-indicator ok";
+  } else {
+    el.textContent = "Mismatch - check warnings in the log";
+    el.className = "match-indicator warn";
+  }
+}
+
+
+// ---- Marketplace-wise breakdown table ---------------------------------------
+// Groups input rows and their corresponding output rows by detected channel
+// (calculation identical to the original; only the presentation changed).
+function renderMarketplaceBreakdown(wrapId, tableId, inputHeaderIndex, inputRows, outputRows,
+                                     orderIdCol, valueGetterInput, valueGetterOutput) {
+  const wrap = document.getElementById(wrapId);
+  const table = document.getElementById(tableId);
+  if (!inputRows.length) { wrap.style.display = "none"; return; }
+
+  const orderIdx = inputHeaderIndex[norm(orderIdCol)];
+  const groups = {};
+  inputRows.forEach((row, i) => {
+    const ch = orderIdx !== undefined ? detectChannel(row[orderIdx]) : "Unknown";
+    if (!groups[ch]) groups[ch] = { inputQty: 0, outputQty: 0, inputValue: 0, outputValue: 0 };
+    groups[ch].inputQty++;
+    groups[ch].inputValue += valueGetterInput(row);
+    const outRow = outputRows[i];
+    if (outRow) {
+      groups[ch].outputQty++;
+      groups[ch].outputValue += valueGetterOutput(outRow);
+    }
+  });
+
+  const names = Object.keys(groups).sort((a, b) => groups[b].inputQty - groups[a].inputQty);
+  const tot = { inputQty: 0, outputQty: 0, inputValue: 0, outputValue: 0 };
+  let html = '<thead><tr><th>Marketplace</th><th class="num">Input Qty</th><th class="num">Output Qty</th><th class="num">Input Value</th><th class="num">Output Value</th></tr></thead><tbody>';
+  for (const name of names) {
+    const g = groups[name];
+    Object.keys(tot).forEach((k) => { tot[k] += g[k]; });
+    html += `<tr><td>${esc(name)}</td><td class="num">${fmtInt(g.inputQty)}</td><td class="num">${fmtInt(g.outputQty)}</td>`
+      + `<td class="num">${fmtMoney(g.inputValue)}</td><td class="num">${fmtMoney(g.outputValue)}</td></tr>`;
+  }
+  html += "</tbody>";
+  if (names.length > 1) {
+    html += `<tfoot><tr><td>Total</td><td class="num">${fmtInt(tot.inputQty)}</td><td class="num">${fmtInt(tot.outputQty)}</td>`
+      + `<td class="num">${fmtMoney(tot.inputValue)}</td><td class="num">${fmtMoney(tot.outputValue)}</td></tr></tfoot>`;
+  }
+  table.innerHTML = html;
+  wrap.style.display = names.length ? "block" : "none";
+}
+
+// ---- File reading (CSV or Excel via SheetJS) -------------------------------
+function readFileAsArrayBuffer(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsArrayBuffer(file);
+  });
+}
+function readFileAsText(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsText(file);
+  });
+}
+
+async function loadDumpFile(file, sheetName) {
+  const isCSV = file.name.toLowerCase().endsWith(".csv");
+  if (isCSV) {
+    const text = await readFileAsText(file);
+    return readDumpCSV(text);
+  }
+  const buf = await readFileAsArrayBuffer(file);
+  const wb = XLSX.read(buf, { type: "array", cellDates: true });
+  const name = sheetName || wb.SheetNames[0];
+  const ws = wb.Sheets[name];
+  const rawRows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: null });
+  return readDumpFromRows(rawRows);
+}
+
+function listExcelSheets(file) {
+  return readFileAsArrayBuffer(file).then((buf) => {
+    const wb = XLSX.read(buf, { type: "array", cellDates: true });
+    return wb.SheetNames;
+  });
+}
+
+function guessBestSheet(file, wantedHeaders) {
+  return readFileAsArrayBuffer(file).then((buf) => {
+    const wb = XLSX.read(buf, { type: "array", cellDates: true });
+    let best = wb.SheetNames[0];
+    let bestScore = -1;
+    for (const name of wb.SheetNames) {
+      const ws = wb.Sheets[name];
+      const rows = XLSX.utils.sheet_to_json(ws, { header: 1, raw: true, defval: null, range: 0 });
+      if (!rows.length) continue;
+      const headerSet = new Set(rows[0].filter((h) => h != null).map((h) => norm(h)));
+      let score = 0;
+      for (const w of wantedHeaders) if (headerSet.has(w)) score++;
+      if (score > bestScore) { bestScore = score; best = name; }
+    }
+    return best;
+  });
+}
+
+// ---- Download helper (writes xlsx via SheetJS, triggers browser download) -
+function downloadXLSX(filename, headers, rows) {
+  const aoa = [headers, ...rows.map((r) => r.map((v) => (v === null || v === undefined ? "" : v)))];
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, "Sheet1");
+  XLSX.writeFile(wb, filename);
+}
+
+
+// ---- Preview table rendering -----------------------------------------------
+// ---- Preview controller: pagination + header/value filter -------------------
+// One instance per tab (Sales/Return). Filtering is purely a display concern -
+// it never touches the underlying output rows used for download.
+const PAGE_SIZE = 100;
+
+function createPreviewController(prefix) {
+  const tableEl = document.getElementById(prefix + "PreviewTable");
+  const paginationEl = document.getElementById(prefix + "PaginationBar");
+  const fieldSelect = document.getElementById(prefix + "FilterField");
+  const valueInput = document.getElementById(prefix + "FilterValue");
+  const applyBtn = document.getElementById(prefix + "FilterApply");
+  const clearBtn = document.getElementById(prefix + "FilterClear");
+  const summaryEl = document.getElementById(prefix + "FilterSummary");
+
+  const state = { headers: [], allRows: [], filteredRows: [], page: 1, field: "", value: "" };
+
+  function setData(headers, rows) {
+    state.headers = headers;
+    state.allRows = rows;
+    state.field = "";
+    state.value = "";
+    valueInput.value = "";
+    fieldSelect.innerHTML = '<option value="">All fields</option>' +
+      headers.map((h) => `<option value="${h}">${h}</option>`).join("");
+    applyFilter();
+  }
+
+  function applyFilter() {
+    const field = fieldSelect.value;
+    const value = valueInput.value.trim().toLowerCase();
+    state.field = field;
+    state.value = value;
+    if (!field || !value) {
+      state.filteredRows = state.allRows;
+    } else {
+      const idx = state.headers.indexOf(field);
+      state.filteredRows = state.allRows.filter((row) => {
+        const cell = row[idx];
+        return cell !== null && cell !== undefined && String(cell).toLowerCase().includes(value);
+      });
+    }
+    state.page = 1;
+    updateFilterSummary();
+    render();
+  }
+
+  function clearFilter() {
+    fieldSelect.value = "";
+    valueInput.value = "";
+    applyFilter();
+    playSound("click");
+  }
+
+  function updateFilterSummary() {
+    if (state.field && state.value) {
+      summaryEl.innerHTML = `Showing rows where <b>${state.field}</b> contains "<b>${valueInput.value.trim()}</b>" `
+        + `(${state.filteredRows.length.toLocaleString("en-IN")} of ${state.allRows.length.toLocaleString("en-IN")} rows) `
+        + `<button type="button" class="clear-filter-btn" id="${prefix}InlineClear"><i class="fa-solid fa-xmark"></i> Clear filter</button>`;
+      document.getElementById(prefix + "InlineClear").addEventListener("click", clearFilter);
+    } else {
+      summaryEl.textContent = "";
+    }
+  }
+
+  function render() {
+    const rows = state.filteredRows;
+    const totalPages = Math.max(1, Math.ceil(rows.length / PAGE_SIZE));
+    if (state.page > totalPages) state.page = totalPages;
+    const start = (state.page - 1) * PAGE_SIZE;
+    const pageRows = rows.slice(start, start + PAGE_SIZE);
+
+    tableEl.innerHTML = "";
+    const emptyExisting = tableEl.parentElement.querySelector(".empty-state");
+    if (emptyExisting) emptyExisting.remove();
+
+    if (!rows.length) {
+      const empty = document.createElement("div");
+      empty.className = "empty-state";
+      empty.innerHTML = state.allRows.length
+        ? '<i class="fa-solid fa-magnifying-glass"></i>No matching records found.<br>Try changing or clearing your filters.'
+        : '<i class="fa-solid fa-inbox"></i>No rows to preview yet.';
+      tableEl.parentElement.appendChild(empty);
+      paginationEl.innerHTML = "";
+      return;
+    }
+
+    const thead = document.createElement("thead");
+    const trh = document.createElement("tr");
+    state.headers.forEach((h) => {
+      const th = document.createElement("th");
+      th.textContent = h;
+      trh.appendChild(th);
+    });
+    thead.appendChild(trh);
+    tableEl.appendChild(thead);
+    const tbody = document.createElement("tbody");
+    pageRows.forEach((row) => {
+      const tr = document.createElement("tr");
+      row.forEach((v) => {
+        const td = document.createElement("td");
+        td.textContent = v === null || v === undefined ? "" : v;
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+    tableEl.appendChild(tbody);
+
+    renderPagination(totalPages, rows.length, start, start + pageRows.length);
+  }
+
+  function renderPagination(totalPages, totalRows, startIdx, endIdx) {
+    paginationEl.innerHTML = "";
+    const info = document.createElement("div");
+    info.className = "pagination-info";
+    info.textContent = totalRows
+      ? `Showing ${(startIdx + 1).toLocaleString("en-IN")}\u2013${endIdx.toLocaleString("en-IN")} of ${totalRows.toLocaleString("en-IN")} rows`
+      : "";
+    paginationEl.appendChild(info);
+
+    if (totalPages <= 1) return;
+    const controls = document.createElement("div");
+    controls.className = "pagination-controls";
+
+    function pageBtn(label, page, opts = {}) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "page-btn" + (opts.active ? " active" : "");
+      b.textContent = label;
+      b.disabled = !!opts.disabled;
+      b.addEventListener("click", () => { playSound("click"); state.page = page; render(); });
+      return b;
+    }
+
+    controls.appendChild(pageBtn("\u2039 Prev", state.page - 1, { disabled: state.page === 1 }));
+
+    const pages = [];
+    for (let p = 1; p <= totalPages; p++) {
+      if (p === 1 || p === totalPages || Math.abs(p - state.page) <= 2) pages.push(p);
+    }
+    let prev = 0;
+    for (const p of pages) {
+      if (p - prev > 1) {
+        const ell = document.createElement("span");
+        ell.className = "page-ellipsis";
+        ell.textContent = "...";
+        controls.appendChild(ell);
+      }
+      controls.appendChild(pageBtn(String(p), p, { active: p === state.page }));
+      prev = p;
+    }
+
+    controls.appendChild(pageBtn("Next \u203a", state.page + 1, { disabled: state.page === totalPages }));
+    paginationEl.appendChild(controls);
+  }
+
+  applyBtn.addEventListener("click", () => { playSound("click"); applyFilter(); });
+  clearBtn.addEventListener("click", clearFilter);
+  valueInput.addEventListener("keydown", (e) => { if (e.key === "Enter") applyFilter(); });
+
+  return { setData };
+}
+
+const salesPreview = createPreviewController("sales");
+const returnPreview = createPreviewController("return");
+
+
+// ---- Generic drop zone wiring -----------------------------------------------
+function wireDropZone(zoneEl, browseBtn, fileInput, hintEl, onFile) {
+  browseBtn.addEventListener("click", (e) => { playSound("click"); fileInput.click(); });
+  fileInput.addEventListener("change", () => {
+    if (fileInput.files.length) { playSound("upload"); onFile(fileInput.files[0]); }
+  });
+  zoneEl.addEventListener("click", (e) => {
+    if (e.target === browseBtn) return;
+    fileInput.click();
+  });
+  ["dragenter", "dragover"].forEach((evt) =>
+    zoneEl.addEventListener(evt, (e) => { e.preventDefault(); zoneEl.classList.add("dragover"); })
+  );
+  ["dragleave", "drop"].forEach((evt) =>
+    zoneEl.addEventListener(evt, (e) => { e.preventDefault(); zoneEl.classList.remove("dragover"); })
+  );
+  zoneEl.addEventListener("drop", (e) => {
+    const files = e.dataTransfer.files;
+    if (files.length > 1) notify("Please drop only one file at a time. Using the first one.");
+    if (files.length) { playSound("upload"); onFile(files[0]); }
+  });
+  function setFileName(name) {
+    hintEl.textContent = name;
+    hintEl.classList.add("has-file");
+  }
+  return { setFileName };
+}
+
+function logMsg(logEl, msg) {
+  logEl.textContent += msg + "\n";
+  logEl.scrollTop = logEl.scrollHeight;
+}
+
+
+// ---- Progress bar / step tracker --------------------------------------------
+// Each setProgress call is made right after a real processing stage has
+// completed, so the percentage reflects actual work, not a simulation.
+function stepIndexForPercent(pct) {
+  if (pct >= 100) return 6;
+  if (pct >= 95) return 5;
+  if (pct >= 85) return 4;
+  if (pct >= 50) return 3;
+  if (pct >= 30) return 2;
+  if (pct >= 15) return 1;
+  return 0;
+}
+
+function setProgress(wrapEl, fillEl, statusEl, stepsEl, pct, label) {
+  fillEl.style.width = pct + "%";
+  statusEl.textContent = label || pct + "%";
+  statusEl.classList.toggle("complete", pct >= 100);
+  statusEl.classList.remove("errored");
+  const pctEl = wrapEl.querySelector(".progress-pct");
+  if (pctEl) pctEl.textContent = Math.round(pct) + "%";
+  const track = wrapEl.querySelector(".progress-track");
+  if (track) track.setAttribute("aria-valuenow", String(Math.round(pct)));
+  wrapEl.classList.remove("progress-error");
+  wrapEl.classList.toggle("progress-active", pct > 0 && pct < 100);
+  wrapEl.classList.toggle("progress-complete", pct >= 100);
+  const idx = stepIndexForPercent(pct);
+  if (stepsEl) {
+    Array.from(stepsEl.children).forEach((el, i) => {
+      el.classList.toggle("active", i === idx && pct < 100);
+      el.classList.toggle("done", i < idx || pct >= 100);
+    });
+  }
+}
+
+function resetProgress(wrapEl, fillEl, statusEl, stepsEl) {
+  wrapEl.classList.remove("progress-complete", "progress-active", "progress-error");
+  fillEl.style.width = "0%";
+  statusEl.textContent = "Ready";
+  statusEl.classList.remove("complete", "errored");
+  const pctEl = wrapEl.querySelector(".progress-pct");
+  if (pctEl) pctEl.textContent = "0%";
+  const track = wrapEl.querySelector(".progress-track");
+  if (track) track.setAttribute("aria-valuenow", "0");
+  if (stepsEl) Array.from(stepsEl.children).forEach((el) => el.classList.remove("active", "done"));
+}
+
+function setProgressError(wrapEl, statusEl) {
+  statusEl.textContent = "Error";
+  statusEl.classList.remove("complete");
+  statusEl.classList.add("errored");
+  wrapEl.classList.remove("progress-active", "progress-complete");
+  wrapEl.classList.add("progress-error");
+}
+
+// Gives the browser a real chance to paint (and run the bar's width
+// transition) between processing stages. Falls back to a timer so it can never
+// stall if the tab is in the background.
+function yieldToUI() {
+  return new Promise((resolve) => {
+    let done = false;
+    const fin = () => { if (!done) { done = true; resolve(); } };
+    if (typeof requestAnimationFrame === "function") requestAnimationFrame(() => setTimeout(fin, 60));
+    setTimeout(fin, 200);
+  });
+}
+
+// ============================================================================
+// MARKETPLACE MULTI-SELECT (reusable). Selections feed the real filtering
+// logic (filterRowsByChannels). onChange fires on every user selection change
+// so results update instantly without pressing Generate again.
+// ============================================================================
+const MARKETPLACES = ["Amazon", "Flipkart", "JioMart", "Kesh-King", "Zandu Care", "Kiosk", "Dpanda", "Other"];
+
+function createMarketplaceMultiSelect(ids, onChange) {
+  const selected = new Set(); // empty set == "All marketplaces" (no filter)
+  const dropdown = document.getElementById(ids.dropdown);
+  const toggle = document.getElementById(ids.toggle);
+  const toggleText = document.getElementById(ids.toggleText);
+  const chipsEl = document.getElementById(ids.chips);
+  const optionsEl = document.getElementById(ids.options);
+  const panel = document.getElementById(ids.panel);
+  const selectAllBtn = document.getElementById(ids.selectAll);
+  const clearAllBtn = document.getElementById(ids.clearAll);
+  const changed = () => { if (onChange) onChange(); };
+
+  function label() {
+    if (selected.size === 0 || selected.size === MARKETPLACES.length) return "All marketplaces";
+    return Array.from(selected).join(" \u2022 ");
+  }
+
+  function render() {
+    toggleText.textContent = label();
+
+    chipsEl.innerHTML = "";
+    selected.forEach((name) => {
+      const chip = document.createElement("span");
+      chip.className = "ms-chip";
+      const lbl = document.createElement("span");
+      lbl.textContent = name;
+      const removeBtn = document.createElement("button");
+      removeBtn.type = "button";
+      removeBtn.textContent = "\u00d7";
+      removeBtn.setAttribute("aria-label", "Remove " + name);
+      removeBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        selected.delete(name);
+        playSound("uncheck");
+        render();
+        changed();
+      });
+      chip.appendChild(lbl);
+      chip.appendChild(removeBtn);
+      chipsEl.appendChild(chip);
+    });
+
+    optionsEl.innerHTML = "";
+    MARKETPLACES.forEach((name) => {
+      const checked = selected.has(name);
+      const opt = document.createElement("div");
+      opt.className = "ms-option" + (checked ? " checked" : "");
+      opt.setAttribute("role", "option");
+      opt.setAttribute("aria-selected", String(checked));
+
+      const cb = document.createElement("input");
+      cb.type = "checkbox";
+      cb.checked = checked;
+
+      const dot = document.createElement("span");
+      dot.className = "dot";
+
+      const lbl = document.createElement("span");
+      lbl.textContent = name;
+      lbl.style.flex = "1";
+
+      opt.appendChild(cb);
+      opt.appendChild(lbl);
+      opt.appendChild(dot);
+
+      opt.addEventListener("click", () => {
+        if (selected.has(name)) { selected.delete(name); playSound("uncheck"); }
+        else { selected.add(name); playSound("check"); }
+        render();
+        changed();
+      });
+      optionsEl.appendChild(opt);
+    });
+  }
+
+  function openPanel() {
+    dropdown.classList.add("open");
+    toggle.setAttribute("aria-expanded", "true");
+    playSound("open");
+  }
+  function closePanel() {
+    if (!dropdown.classList.contains("open")) return;
+    dropdown.classList.remove("open");
+    toggle.setAttribute("aria-expanded", "false");
+    playSound("close");
+  }
+
+  toggle.addEventListener("click", (e) => {
+    e.stopPropagation();
+    dropdown.classList.contains("open") ? closePanel() : openPanel();
+  });
+  selectAllBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    MARKETPLACES.forEach((m) => selected.add(m));
+    playSound("check");
+    render();
+    changed();
+  });
+  clearAllBtn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    selected.clear();
+    playSound("uncheck");
+    render();
+    changed();
+  });
+  panel.addEventListener("click", (e) => e.stopPropagation());
+  document.addEventListener("click", (e) => { if (!dropdown.contains(e.target)) closePanel(); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closePanel(); });
+
+  render();
+
+  return {
+    getSelected: () => Array.from(selected),
+    reset: () => { selected.clear(); render(); },
+  };
+}
+
+let salesSelectionChanged = () => {};
+let returnSelectionChanged = () => {};
+let dashboardRefresh = () => {};
+
+const salesMarketplaceCtrl = createMarketplaceMultiSelect({
+  dropdown: "marketplaceDropdown", toggle: "marketplaceToggle", toggleText: "marketplaceToggleText",
+  chips: "marketplaceChips", options: "marketplaceOptions", panel: "marketplacePanel",
+  selectAll: "marketplaceSelectAll", clearAll: "marketplaceClearAll",
+}, () => salesSelectionChanged());
+const returnMarketplaceCtrl = createMarketplaceMultiSelect({
+  dropdown: "returnMarketplaceDropdown", toggle: "returnMarketplaceToggle", toggleText: "returnMarketplaceToggleText",
+  chips: "returnMarketplaceChips", options: "returnMarketplaceOptions", panel: "returnMarketplacePanel",
+  selectAll: "returnMarketplaceSelectAll", clearAll: "returnMarketplaceClearAll",
+}, () => returnSelectionChanged());
+const dashMarketplaceCtrl = createMarketplaceMultiSelect({
+  dropdown: "dashMarketplaceDropdown", toggle: "dashMarketplaceToggle", toggleText: "dashMarketplaceToggleText",
+  chips: "dashMarketplaceChips", options: "dashMarketplaceOptions", panel: "dashMarketplacePanel",
+  selectAll: "dashMarketplaceSelectAll", clearAll: "dashMarketplaceClearAll",
+}, () => dashboardRefresh());
+
+function selectionOf(ctrl) {
+  const sel = ctrl.getSelected();
+  const isAll = sel.length === 0 || sel.length === MARKETPLACES.length;
+  return { sel, isAll };
+}
+function setScopeText(prefix, isAll, sel, kept, total) {
+  const el = document.getElementById(prefix + "SummaryScope");
+  if (el) el.textContent = isAll ? "\u00b7 All marketplaces" : `\u00b7 ${sel.join(", ")} (${fmtInt(kept)} of ${fmtInt(total)} rows)`;
+}
+
+// ============================================================================
+// SALES TAB
+// ============================================================================
+(function salesTabInit() {
+  const dropzone = document.getElementById("salesDropzone");
+  const browseBtn = document.getElementById("salesBrowseBtn");
+  const fileInput = document.getElementById("salesFileInput");
+  const hint = document.getElementById("salesHint");
+  const sheetRow = document.getElementById("salesSheetRow");
+  const sheetSelect = document.getElementById("salesSheetSelect");
+  const generateBtn = document.getElementById("salesGenerateBtn");
+  const downloadBtn = document.getElementById("salesDownloadBtn");
+  const clearBtn = document.getElementById("salesClearBtn");
+  const progressWrap = document.getElementById("salesProgressWrap");
+  const progressFill = document.getElementById("salesProgressFill");
+  const statusEl = document.getElementById("salesStatus");
+  const stepsEl = document.getElementById("salesSteps");
+  const logEl = document.getElementById("salesLog");
+
+  let currentFile = null;
+  let lastResult = null; // { outputRows, headers }
+  let ctx = null;        // { headerIndex, allRows } - the parsed dump, kept so marketplace changes apply instantly
+  let busy = false;
+
+  const zone = wireDropZone(dropzone, browseBtn, fileInput, hint, onFileSelected);
+
+  function clearResults() {
+    ctx = null;
+    lastResult = null;
+    appData.sales = null;
+    salesPreview.setData([], []);
+    downloadBtn.disabled = true;
+    updateSummaryCards("sales", null, null, null, null);
+    document.getElementById("salesSummaryScope").textContent = "";
+    const mi = document.getElementById("salesMatchIndicator");
+    mi.className = "match-indicator neutral";
+    mi.textContent = "";
+    document.getElementById("salesBreakdownWrap").style.display = "none";
+    resetProgress(progressWrap, progressFill, statusEl, stepsEl);
+    dashboardRefresh(true);
+  }
+
+  async function onFileSelected(file) {
+    currentFile = file;
+    zone.setFileName(file.name);
+    clearResults();
+    if (file.name.toLowerCase().endsWith(".csv")) {
+      sheetRow.style.display = "none";
+      sheetSelect.innerHTML = "";
+      return;
+    }
+    try {
+      const sheets = await listExcelSheets(file);
+      const wanted = MAPPING_DATA.filter(([, uc]) => uc).map(([, uc]) => norm(uc));
+      const best = sheets.length ? await guessBestSheet(file, wanted) : "";
+      sheetSelect.innerHTML = "";
+      sheets.forEach((s) => {
+        const opt = document.createElement("option");
+        opt.value = s; opt.textContent = s;
+        sheetSelect.appendChild(opt);
+      });
+      sheetSelect.value = best;
+      sheetRow.style.display = sheets.length > 1 ? "flex" : "none";
+    } catch (e) {
+      notify("Error reading file: " + e.message, "error");
+    }
+  }
+
+  clearBtn.addEventListener("click", () => {
+    playSound("click");
+    currentFile = null;
+    fileInput.value = "";
+    hint.textContent = "Drag & drop a file here, or click to browse";
+    hint.classList.remove("has-file");
+    sheetRow.style.display = "none";
+    logEl.textContent = "";
+    salesMarketplaceCtrl.reset();
+    clearResults();
+  });
+
+  // Runs the real pipeline (filter -> build rows) for the current marketplace selection.
+  function selectRows() {
+    const { headerIndex, allRows } = ctx;
+    const { sel, isAll } = selectionOf(salesMarketplaceCtrl);
+    let dataRows = allRows;
+    if (!isAll) dataRows = filterRowsByChannels(headerIndex, allRows, sel);
+    return { headerIndex, allRows, sel, isAll, dataRows };
+  }
+
+  function showResults(view, outputRows) {
+    const inputQty = view.dataRows.length; // scoped to the selected marketplace(s)
+    const inputValue = sumInputValue(view.headerIndex, view.dataRows);
+    const outputValue = sumOutputValue(outputRows);
+    updateSummaryCards("sales", inputQty, outputRows.length, inputValue, outputValue);
+    updateMatchIndicator("sales", inputQty, outputRows.length, inputValue, outputValue, { mode: "SALES" });
+    if (!view.isAll) {
+      const mi = document.getElementById("salesMatchIndicator");
+      mi.textContent = `Filter applied (${view.sel.join(", ")}): ${fmtInt(view.dataRows.length)} of ${fmtInt(view.allRows.length)} input rows kept. ` + mi.textContent;
+    }
+    setScopeText("sales", view.isAll, view.sel, view.dataRows.length, view.allRows.length);
+    renderMarketplaceBreakdown(
+      "salesBreakdownWrap", "salesBreakdownTable", view.headerIndex, view.dataRows, outputRows,
+      "Display Order Code",
+      (row) => toNumber(row[view.headerIndex[norm(DASHBOARD_INPUT_VALUE_COLUMN)]]),
+      (row) => toNumber(row[sapHeaders().indexOf(DASHBOARD_OUTPUT_VALUE_FIELD)])
+    );
+    salesPreview.setData(sapHeaders(), outputRows);
+    lastResult = { outputRows, headers: sapHeaders() };
+    downloadBtn.disabled = outputRows.length === 0;
+  }
+
+  // Marketplace changed after a file was generated: re-run for just that selection.
+  salesSelectionChanged = debounce(() => {
+    if (!ctx || busy) return;
+    try {
+      const view = selectRows();
+      const { outputRows } = buildOutputRows(view.headerIndex, view.dataRows);
+      mergeHistory(buildHistoryUpdates(view.headerIndex, view.dataRows));
+      refreshHistoryStatus();
+      showResults(view, outputRows);
+      logMsg(logEl, `Marketplace selection changed (${view.isAll ? "All marketplaces" : view.sel.join(", ")}): ${outputRows.length} rows.`);
+    } catch (e) {
+      logMsg(logEl, "ERROR: " + e.message);
+      notify(e.message, "error");
+    }
+  }, 180);
+
+  generateBtn.addEventListener("click", async () => {
+    if (!currentFile) { notify("Please select a Unicommerce dump file first.", "error"); return; }
+    const isExcel = !currentFile.name.toLowerCase().endsWith(".csv");
+    const sheetName = sheetSelect.value;
+    if (isExcel && sheetRow.style.display !== "none" && !sheetName) {
+      notify("Please select which sheet contains the order data.", "error"); return;
+    }
+
+    logEl.textContent = "";
+    resetProgress(progressWrap, progressFill, statusEl, stepsEl);
+    generateBtn.disabled = true;
+    busy = true;
+    playSound("start");
+
+    try {
+      setProgress(progressWrap, progressFill, statusEl, stepsEl, 5, "Reading file...");
+      logMsg(logEl, `Using built-in mapping (${MAPPING_DATA.length} SAP columns).`);
+      logMsg(logEl, `Reading dump file: ${currentFile.name}` + (isExcel ? ` (sheet '${sheetName}')` : " (CSV)"));
+      await yieldToUI();
+
+      const { headerIndex, dataRows: allRows } = await loadDumpFile(currentFile, isExcel ? sheetName : null);
+      ctx = { headerIndex, allRows };
+      logMsg(logEl, `Found ${allRows.length} data rows in the dump.`);
+      setProgress(progressWrap, progressFill, statusEl, stepsEl, 20, "Validating columns...");
+      playSound("step");
+      await yieldToUI();
+
+      setProgress(progressWrap, progressFill, statusEl, stepsEl, 35, "Mapping marketplaces...");
+      const view = selectRows();
+      if (!view.isAll) {
+        logMsg(logEl, `Marketplace filter (${view.sel.join(", ")}): kept ${view.dataRows.length} of ${allRows.length} rows.`);
+      }
+      await yieldToUI();
+
+      setProgress(progressWrap, progressFill, statusEl, stepsEl, 50, "Processing records...");
+      logMsg(logEl, "Matching columns and building output...");
+      await yieldToUI();
+
+      const { outputRows, warnings } = buildOutputRows(headerIndex, view.dataRows);
+      setProgress(progressWrap, progressFill, statusEl, stepsEl, 80, "Processing records...");
+      playSound("step");
+      await yieldToUI();
+
+      setProgress(progressWrap, progressFill, statusEl, stepsEl, 90, "Reconciling data...");
+      const updates = buildHistoryUpdates(headerIndex, view.dataRows);
+      const changed = mergeHistory(updates);
+      if (changed) logMsg(logEl, `Sales history updated (${changed} order/SKU entries) for future Return lookups.`);
+      await yieldToUI();
+
+      warnings.forEach((w) => logMsg(logEl, "Warning: " + w));
+      logMsg(logEl, `\nCompleted. ${outputRows.length} rows generated.`);
+
+      setProgress(progressWrap, progressFill, statusEl, stepsEl, 96, "Finalizing results...");
+      showResults(view, outputRows);
+      refreshHistoryStatus();
+      appData.sales = { name: currentFile.name, headerIndex, allRows };
+      dashboardRefresh(true);
+      await yieldToUI();
+
+      setProgress(progressWrap, progressFill, statusEl, stepsEl, 100, "Complete");
+      playSound("success");
+    } catch (e) {
+      logMsg(logEl, "ERROR: " + e.message);
+      setProgressError(progressWrap, statusEl);
+      playSound("error");
+      notify("Error: " + e.message, "error");
+    } finally {
+      busy = false;
+      generateBtn.disabled = false;
+    }
+  });
+
+  downloadBtn.addEventListener("click", () => {
+    playSound("click");
+    if (!lastResult) return;
+    const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    downloadXLSX(`SAP_Upload_Sales_${stamp}.xlsx`, lastResult.headers, lastResult.outputRows);
+    logMsg(logEl, `Downloaded SAP upload file (${lastResult.outputRows.length} rows).`);
+  });
+})();
+
+// ============================================================================
+// RETURN TAB
+// ============================================================================
+(function returnTabInit() {
+  const dropzone = document.getElementById("returnDropzone");
+  const browseBtn = document.getElementById("returnBrowseBtn");
+  const fileInput = document.getElementById("returnFileInput");
+  const hint = document.getElementById("returnHint");
+  const sheetRow = document.getElementById("returnSheetRow");
+  const sheetSelect = document.getElementById("returnSheetSelect");
+  const generateBtn = document.getElementById("returnGenerateBtn");
+  const downloadBtn = document.getElementById("returnDownloadBtn");
+  const clearBtn = document.getElementById("returnClearBtn");
+  const progressWrap = document.getElementById("returnProgressWrap");
+  const progressFill = document.getElementById("returnProgressFill");
+  const statusEl = document.getElementById("returnStatus");
+  const stepsEl = document.getElementById("returnSteps");
+  const logEl = document.getElementById("returnLog");
+
+  // Optional Sales file (for RP Code lookup without needing to run Sales Upload first)
+  const salesDropzone = document.getElementById("returnSalesDropzone");
+  const salesBrowseBtn = document.getElementById("returnSalesBrowseBtn");
+  const salesFileInput = document.getElementById("returnSalesFileInput");
+  const salesHint = document.getElementById("returnSalesHint");
+  const salesClearFileBtn = document.getElementById("returnSalesClearFileBtn");
+  const salesSheetRow = document.getElementById("returnSalesSheetRow");
+  const salesSheetSelect = document.getElementById("returnSalesSheetSelect");
+
+  let currentFile = null;
+  let currentSalesFile = null;
+  let lastResult = null;
+  let ctx = null; // { headerIndex, allRows, history }
+  let busy = false;
+
+  const zone = wireDropZone(dropzone, browseBtn, fileInput, hint, onFileSelected);
+  const salesZone = wireDropZone(salesDropzone, salesBrowseBtn, salesFileInput, salesHint, onSalesFileSelected);
+
+  function clearResults() {
+    ctx = null;
+    lastResult = null;
+    appData.ret = null;
+    returnPreview.setData([], []);
+    downloadBtn.disabled = true;
+    updateSummaryCards("return", null, null, null, null);
+    document.getElementById("returnSummaryScope").textContent = "";
+    const mi = document.getElementById("returnMatchIndicator");
+    mi.className = "match-indicator neutral";
+    mi.textContent = "";
+    document.getElementById("returnBreakdownWrap").style.display = "none";
+    resetProgress(progressWrap, progressFill, statusEl, stepsEl);
+    dashboardRefresh(true);
+  }
+
+  async function onFileSelected(file) {
+    currentFile = file;
+    zone.setFileName(file.name);
+    clearResults();
+    if (file.name.toLowerCase().endsWith(".csv")) {
+      sheetRow.style.display = "none";
+      sheetSelect.innerHTML = "";
+      return;
+    }
+    try {
+      const sheets = await listExcelSheets(file);
+      sheetSelect.innerHTML = "";
+      sheets.forEach((s) => {
+        const opt = document.createElement("option");
+        opt.value = s; opt.textContent = s;
+        sheetSelect.appendChild(opt);
+      });
+      sheetSelect.value = sheets[0] || "";
+      sheetRow.style.display = sheets.length > 1 ? "flex" : "none";
+    } catch (e) {
+      notify("Error reading file: " + e.message, "error");
+    }
+  }
+
+  async function onSalesFileSelected(file) {
+    currentSalesFile = file;
+    salesZone.setFileName(file.name);
+    salesClearFileBtn.style.display = "inline-flex";
+    if (file.name.toLowerCase().endsWith(".csv")) {
+      salesSheetRow.style.display = "none";
+      salesSheetSelect.innerHTML = "";
+      return;
+    }
+    try {
+      const sheets = await listExcelSheets(file);
+      const wanted = MAPPING_DATA.filter(([, uc]) => uc).map(([, uc]) => norm(uc));
+      const best = sheets.length ? await guessBestSheet(file, wanted) : "";
+      salesSheetSelect.innerHTML = "";
+      sheets.forEach((s) => {
+        const opt = document.createElement("option");
+        opt.value = s; opt.textContent = s;
+        salesSheetSelect.appendChild(opt);
+      });
+      salesSheetSelect.value = best;
+      salesSheetRow.style.display = sheets.length > 1 ? "flex" : "none";
+    } catch (e) {
+      notify("Error reading Sales file: " + e.message, "error");
+    }
+  }
+
+  salesClearFileBtn.addEventListener("click", () => {
+    playSound("click");
+    currentSalesFile = null;
+    salesFileInput.value = "";
+    salesHint.textContent = "Drag & drop a Sales dump here, or click to browse (optional)";
+    salesHint.classList.remove("has-file");
+    salesSheetRow.style.display = "none";
+    salesClearFileBtn.style.display = "none";
+  });
+
+  clearBtn.addEventListener("click", () => {
+    playSound("click");
+    currentFile = null;
+    currentSalesFile = null;
+    fileInput.value = "";
+    salesFileInput.value = "";
+    hint.textContent = "Drag & drop a file here, or click to browse";
+    hint.classList.remove("has-file");
+    sheetRow.style.display = "none";
+    salesHint.textContent = "Drag & drop a Sales dump here, or click to browse (optional)";
+    salesHint.classList.remove("has-file");
+    salesSheetRow.style.display = "none";
+    salesClearFileBtn.style.display = "none";
+    logEl.textContent = "";
+    returnMarketplaceCtrl.reset();
+    clearResults();
+  });
+
+  function selectRows() {
+    const { headerIndex, allRows } = ctx;
+    const { sel, isAll } = selectionOf(returnMarketplaceCtrl);
+    let dataRows = allRows;
+    if (!isAll) dataRows = filterRowsByChannels(headerIndex, allRows, sel, "Sale Order Number");
+    return { headerIndex, allRows, sel, isAll, dataRows };
+  }
+
+  function showResults(view, outputRows) {
+    const totalIdx = RETURN_OUTPUT_COLUMNS.indexOf("Total");
+    const inputQty = view.dataRows.length; // scoped to the selected marketplace(s)
+    const inputValue = sumInputValue(view.headerIndex, view.dataRows, RETURN_TOTAL_SOURCE_COL);
+    const outputValue = outputRows.reduce((acc, row) => acc + toNumber(row[totalIdx]), 0);
+    updateSummaryCards("return", inputQty, outputRows.length, inputValue, outputValue);
+    updateMatchIndicator("return", inputQty, outputRows.length, inputValue, outputValue, { mode: "RETURN" });
+    if (!view.isAll) {
+      const mi = document.getElementById("returnMatchIndicator");
+      mi.textContent = `Filter applied (${view.sel.join(", ")}): ${fmtInt(view.dataRows.length)} of ${fmtInt(view.allRows.length)} input rows kept. ` + mi.textContent;
+    }
+    setScopeText("return", view.isAll, view.sel, view.dataRows.length, view.allRows.length);
+    renderMarketplaceBreakdown(
+      "returnBreakdownWrap", "returnBreakdownTable", view.headerIndex, view.dataRows, outputRows,
+      "Sale Order Number",
+      (row) => toNumber(row[view.headerIndex[norm(RETURN_TOTAL_SOURCE_COL)]]),
+      (row) => toNumber(row[totalIdx])
+    );
+    returnPreview.setData(RETURN_OUTPUT_COLUMNS, outputRows);
+    lastResult = { outputRows, headers: RETURN_OUTPUT_COLUMNS };
+    downloadBtn.disabled = outputRows.length === 0;
+  }
+
+  returnSelectionChanged = debounce(() => {
+    if (!ctx || busy) return;
+    try {
+      const view = selectRows();
+      const { outputRows } = buildReturnOutputRows(view.headerIndex, view.dataRows, ctx.history);
+      showResults(view, outputRows);
+      logMsg(logEl, `Marketplace selection changed (${view.isAll ? "All marketplaces" : view.sel.join(", ")}): ${outputRows.length} return rows.`);
+    } catch (e) {
+      logMsg(logEl, "ERROR: " + e.message);
+      notify(e.message, "error");
+    }
+  }, 180);
+
+  generateBtn.addEventListener("click", async () => {
+    if (!currentFile) { notify("Please select a Return dump file first.", "error"); return; }
+    const isExcel = !currentFile.name.toLowerCase().endsWith(".csv");
+    const sheetName = sheetSelect.value;
+    if (isExcel && sheetRow.style.display !== "none" && !sheetName) {
+      notify("Please select which sheet contains the return data.", "error"); return;
+    }
+    const salesIsExcel = currentSalesFile && !currentSalesFile.name.toLowerCase().endsWith(".csv");
+    if (currentSalesFile && salesIsExcel && salesSheetRow.style.display !== "none" && !salesSheetSelect.value) {
+      notify("Please select which sheet contains the Sales order data.", "error"); return;
+    }
+
+    logEl.textContent = "";
+    resetProgress(progressWrap, progressFill, statusEl, stepsEl);
+    generateBtn.disabled = true;
+    busy = true;
+    playSound("start");
+
+    try {
+      setProgress(progressWrap, progressFill, statusEl, stepsEl, 5, "Reading file...");
+      logMsg(logEl, `Reading Return dump file: ${currentFile.name}` + (isExcel ? ` (sheet '${sheetName}')` : " (CSV)"));
+      await yieldToUI();
+
+      const { headerIndex, dataRows: allRows } = await loadDumpFile(currentFile, isExcel ? sheetName : null);
+      logMsg(logEl, `Found ${allRows.length} return rows in the dump.`);
+      setProgress(progressWrap, progressFill, statusEl, stepsEl, 15, "Validating columns...");
+      playSound("step");
+      await yieldToUI();
+
+      // ---- Build the RP Code lookup: optional Sales file (priority) + existing browser history (fallback) ----
+      const existingHistory = loadHistory();
+      let combinedHistory = existingHistory;
+      if (currentSalesFile) {
+        setProgress(progressWrap, progressFill, statusEl, stepsEl, 25, "Reading optional Sales file...");
+        logMsg(logEl, `Reading optional Sales file for RP Code: ${currentSalesFile.name}`);
+        await yieldToUI();
+        const salesSheetName = salesIsExcel ? salesSheetSelect.value : null;
+        const salesDump = await loadDumpFile(currentSalesFile, salesSheetName);
+        const temporarySalesHistory = buildHistoryUpdates(salesDump.headerIndex, salesDump.dataRows);
+        logMsg(logEl, `Built temporary RP Code lookup from optional Sales file (${Object.keys(temporarySalesHistory).length} order/SKU entries) - takes priority for this run.`);
+        combinedHistory = { ...existingHistory, ...temporarySalesHistory };
+      } else {
+        logMsg(logEl, `Loaded Sales history (${Object.keys(existingHistory).length} order/SKU entries known).`);
+      }
+      ctx = { headerIndex, allRows, history: combinedHistory };
+
+      setProgress(progressWrap, progressFill, statusEl, stepsEl, 35, "Mapping marketplaces...");
+      const view = selectRows();
+      if (!view.isAll) {
+        logMsg(logEl, `Marketplace filter (${view.sel.join(", ")}): kept ${view.dataRows.length} of ${allRows.length} rows.`);
+      }
+      await yieldToUI();
+
+      setProgress(progressWrap, progressFill, statusEl, stepsEl, 55, "Processing records...");
+      logMsg(logEl, "Calculating Total, Unit Price, and looking up RP Code...");
+      await yieldToUI();
+
+      const { outputRows, warnings } = buildReturnOutputRows(headerIndex, view.dataRows, combinedHistory);
+      setProgress(progressWrap, progressFill, statusEl, stepsEl, 88, "Reconciling data...");
+      playSound("step");
+      await yieldToUI();
+
+      warnings.forEach((w) => logMsg(logEl, "Warning: " + w));
+      logMsg(logEl, `\nCompleted. ${outputRows.length} return rows generated.`);
+
+      setProgress(progressWrap, progressFill, statusEl, stepsEl, 96, "Finalizing results...");
+      showResults(view, outputRows);
+      appData.ret = { name: currentFile.name, headerIndex, allRows, history: combinedHistory, out: null };
+      dashboardRefresh(true);
+      await yieldToUI();
+
+      setProgress(progressWrap, progressFill, statusEl, stepsEl, 100, "Complete");
+      playSound("success");
+    } catch (e) {
+      logMsg(logEl, "ERROR: " + e.message);
+      setProgressError(progressWrap, statusEl);
+      playSound("error");
+      notify("Error: " + e.message, "error");
+    } finally {
+      busy = false;
+      generateBtn.disabled = false;
+    }
+  });
+
+  downloadBtn.addEventListener("click", () => {
+    playSound("click");
+    if (!lastResult) return;
+    const stamp = new Date().toISOString().slice(0, 10).replace(/-/g, "");
+    downloadXLSX(`SAP_Upload_Return_${stamp}.xlsx`, lastResult.headers, lastResult.outputRows);
+    logMsg(logEl, `Downloaded Return SAP upload file (${lastResult.outputRows.length} rows).`);
+  });
+})();
+
+// ============================================================================
+// DASHBOARD - day-wise Sales vs Return overview (read-only; never alters the
+// upload logic). Works on the parsed dumps kept in memory by the two tabs.
+// ============================================================================
+(function dashboardInit() {
+  const $ = (id) => document.getElementById(id);
+  const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+  const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+  const ORDER_DATE_UC = MAPPING_DATA.find(([sap]) => sap === "ORDER_DATE")[1];
+  const RETURN_TOTAL_IDX = RETURN_OUTPUT_COLUMNS.indexOf("Total");
+
+  let metric = "amt";
+  let dirty = true;
+  let lastDays = [];
+
+  // Normalises any supported date value to YYYY-MM-DD (null if unreadable).
+  function dayKeyFrom(value) {
+    if (value === null || value === undefined || value === "") return null;
+    const f = formatDateValue(value);
+    if (f) {
+      const m = String(f).match(/^(\d{2})-(\d{2})-(\d{4})/);
+      if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+    }
+    const d = new Date(value);
+    if (!isNaN(d.getTime())) return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+    return null;
+  }
+  function labelOf(key, withYear) {
+    const [y, m, d] = key.split("-").map(Number);
+    return `${pad2(d)} ${MONTHS[m - 1]}` + (withYear ? ` ${y}` : "");
+  }
+  function weekdayOf(key) {
+    const [y, m, d] = key.split("-").map(Number);
+    return WEEKDAYS[new Date(y, m - 1, d).getDay()];
+  }
+  const rupee = (n) => "\u20B9 " + fmtMoney(n);
+  function compact(v, isAmt) {
+    if (!isAmt) return v >= 1000 ? parseFloat((v / 1000).toFixed(1)) + "K" : String(Math.round(v));
+    if (v >= 1e7) return parseFloat((v / 1e7).toFixed(2)) + " Cr";
+    if (v >= 1e5) return parseFloat((v / 1e5).toFixed(2)) + " L";
+    if (v >= 1e3) return parseFloat((v / 1e3).toFixed(1)) + " K";
+    return String(Math.round(v));
+  }
+  function niceMax(v) {
+    const p = Math.pow(10, Math.floor(Math.log10(v)));
+    const n = v / p;
+    return (n <= 1 ? 1 : n <= 2 ? 2 : n <= 5 ? 5 : 10) * p;
+  }
+  const blank = () => ({ sQty: 0, sAmt: 0, rQty: 0, rAmt: 0 });
+  function bucket(map, key) {
+    let b = map.get(key);
+    if (!b) { b = blank(); map.set(key, b); }
+    return b;
+  }
+
+  function compute() {
+    const { sel, isAll } = selectionOf(dashMarketplaceCtrl);
+    const wanted = new Set(sel);
+    const from = $("dashFrom").value, to = $("dashTo").value;
+    const inRange = (k) => {
+      if (!from && !to) return true;
+      if (k === "undated") return false;
+      return !(from && k < from) && !(to && k > to);
+    };
+    const days = new Map(), mkts = new Map(), states = new Map(), skus = new Map();
+
+    const s = appData.sales;
+    if (s) {
+      const hi = s.headerIndex;
+      const ci = hi[norm("Display Order Code")], di = hi[norm(ORDER_DATE_UC)], ai = hi[norm(DASHBOARD_INPUT_VALUE_COLUMN)];
+      const ki = hi[norm("Item SKU Code")], si = hi[norm("Shipping Address State")];
+      for (const row of s.allRows) {
+        const ch = ci !== undefined ? detectChannel(row[ci]) : "Unknown";
+        if (!isAll && !wanted.has(ch)) continue;
+        const dk = (di !== undefined && dayKeyFrom(row[di])) || "undated";
+        if (!inRange(dk)) continue;
+        const amt = ai !== undefined ? toNumber(row[ai]) : 0;
+        for (const b of [bucket(days, dk), bucket(mkts, ch)]) { b.sQty += 1; b.sAmt += amt; }
+        if (si !== undefined && row[si] != null && String(row[si]).trim() !== "") {
+          const st = String(applyValueOverride("SHP_ADR_STATE", row[si])).trim().toUpperCase();
+          const b = bucket(states, st); b.sQty += 1; b.sAmt += amt;
+        }
+        if (ki !== undefined && row[ki] != null) {
+          const b = bucket(skus, String(row[ki]).trim()); b.sQty += 1; b.sAmt += amt;
+        }
+      }
+    }
+
+    const r = appData.ret;
+    if (r) {
+      if (!r.out) r.out = buildReturnOutputRows(r.headerIndex, r.allRows, r.history).outputRows;
+      const hi = r.headerIndex;
+      const ci = hi[norm("Sale Order Number")], di = hi[norm("Date")], qi = hi[norm(RETURN_QTY_COL)], ki = hi[norm("Product SKU Code")];
+      r.allRows.forEach((row, i) => {
+        const ch = ci !== undefined ? detectChannel(row[ci]) : "Unknown";
+        if (!isAll && !wanted.has(ch)) return;
+        const dk = (di !== undefined && dayKeyFrom(row[di])) || "undated";
+        if (!inRange(dk)) return;
+        const qty = qi !== undefined ? toNumber(row[qi]) : 1;
+        const amt = toNumber(r.out[i][RETURN_TOTAL_IDX]);
+        for (const b of [bucket(days, dk), bucket(mkts, ch)]) { b.rQty += qty; b.rAmt += amt; }
+        if (ki !== undefined && row[ki] != null) {
+          const b = bucket(skus, String(row[ki]).trim()); b.rQty += qty; b.rAmt += amt;
+        }
+      });
+    }
+
+    const dayList = Array.from(days.entries()).sort((a, b) => (a[0] < b[0] ? -1 : 1)).map(([key, v]) => ({ key, ...v }));
+    const tot = blank();
+    dayList.forEach((d) => { tot.sQty += d.sQty; tot.sAmt += d.sAmt; tot.rQty += d.rQty; tot.rAmt += d.rAmt; });
+    return { dayList, mkts, states, skus, tot };
+  }
+
+  function table(headers, bodyHtml, footHtml) {
+    const head = "<thead><tr>" + headers.map((h) => `<th${h.num ? ' class="num"' : ""}>${h.t}</th>`).join("") + "</tr></thead>";
+    return head + `<tbody>${bodyHtml}</tbody>` + (footHtml ? `<tfoot>${footHtml}</tfoot>` : "");
+  }
+  const emptyRow = (cols) => `<tr><td colspan="${cols}" style="text-align:center;color:var(--muted);padding:26px;">No data to show</td></tr>`;
+  const netCell = (v, money) => `<td class="num ${v < 0 ? "neg" : ""}">${money ? fmtMoney(v) : fmtInt(v)}</td>`;
+
+  function renderKpis(tot, dayList, hasData) {
+    const el = $("dashKpis");
+    if (!hasData) {
+      el.innerHTML = '<div class="empty-state" style="grid-column:1/-1;background:var(--surface);border:1px dashed var(--border-strong);border-radius:var(--radius);">'
+        + '<i class="fa-solid fa-chart-column"></i>No data yet. Generate a file in <b>Sales Upload</b> or <b>Return Upload</b> &mdash; this dashboard fills in automatically.</div>';
+      return;
+    }
+    const peak = dayList.filter((d) => d.key !== "undated").sort((a, b) => b.sAmt - a.sAmt)[0];
+    const netQty = tot.sQty - tot.rQty, netAmt = tot.sAmt - tot.rAmt;
+    const rate = tot.sQty ? (tot.rQty / tot.sQty) * 100 : 0;
+    const cards = [
+      { i: "fa-cart-shopping", l: "Sales Qty", v: fmtInt(tot.sQty), s: `${fmtInt(dayList.filter((d) => d.sQty).length)} active day(s)` },
+      { i: "fa-indian-rupee-sign", l: "Sales Amount", v: rupee(tot.sAmt), s: "Total Price" },
+      { i: "fa-rotate-left", l: "Return Qty", v: fmtInt(tot.rQty), c: "bad", s: `${fmtInt(dayList.filter((d) => d.rQty).length)} active day(s)` },
+      { i: "fa-indian-rupee-sign", l: "Return Amount", v: rupee(tot.rAmt), c: "bad", s: "After other charges" },
+      { i: "fa-boxes-stacked", l: "Net Qty", v: fmtInt(netQty), c: "good", s: "Sales \u2212 Returns", neg: netQty < 0 },
+      { i: "fa-wallet", l: "Net Amount", v: rupee(netAmt), c: "good", s: "Sales \u2212 Returns", neg: netAmt < 0 },
+      { i: "fa-percent", l: "Return Rate", v: rate.toFixed(2) + "%", c: "warn", s: "Return qty \u00f7 sales qty" },
+      { i: "fa-tag", l: "Avg. Value / Unit", v: rupee(tot.sQty ? tot.sAmt / tot.sQty : 0), s: "Sales amount \u00f7 qty" },
+      { i: "fa-trophy", l: "Peak Sales Day", v: peak && peak.sAmt ? labelOf(peak.key, true) : "-", s: peak && peak.sAmt ? `${rupee(peak.sAmt)} \u00b7 ${fmtInt(peak.sQty)} qty` : "" },
+    ];
+    el.innerHTML = cards.map((c) => `<div class="kpi ${c.c || ""}"><div class="kpi-icon"><i class="fa-solid ${c.i}"></i></div>`
+      + `<div class="kpi-label">${c.l}</div><div class="kpi-value ${c.neg ? "neg" : ""}">${c.v}</div><div class="kpi-sub">${c.s || "&nbsp;"}</div></div>`).join("");
+  }
+
+  function renderChart(dayList) {
+    const el = $("dashChart");
+    const list = dayList.filter((d) => d.key !== "undated");
+    if (!list.length) {
+      el.innerHTML = '<div class="empty-state"><i class="fa-solid fa-chart-column"></i>No dated records to chart.</div>';
+      return;
+    }
+    const isAmt = metric === "amt";
+    const sk = isAmt ? "sAmt" : "sQty", rk = isAmt ? "rAmt" : "rQty";
+    const max = niceMax(Math.max(1, ...list.map((d) => Math.max(d[sk], d[rk]))));
+    const H = 300, mt = 14, mb = 42, ml = isAmt ? 66 : 52, mr = 14;
+    const slot = Math.max(38, Math.min(76, 960 / list.length));
+    const W = Math.max(640, ml + mr + slot * list.length);
+    const ph = H - mt - mb;
+    const bw = Math.min(20, slot * 0.34);
+    let svg = `<svg width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" role="img" aria-label="Day-wise sales and returns chart">`;
+    for (let i = 0; i <= 4; i++) {
+      const y = mt + ph * (1 - i / 4);
+      svg += `<line class="grid-line" x1="${ml}" x2="${W - mr}" y1="${y}" y2="${y}"/>`
+        + `<text x="${ml - 8}" y="${y + 4}" text-anchor="end">${compact((max * i) / 4, isAmt)}</text>`;
+    }
+    const step = slot >= 50 ? 1 : 2;
+    list.forEach((d, i) => {
+      const cx = ml + slot * (i + 0.5);
+      const hs = (d[sk] / max) * ph, hr = (d[rk] / max) * ph;
+      const tip = `${labelOf(d.key, true)}\nSales: ${isAmt ? rupee(d.sAmt) : fmtInt(d.sQty)}\nReturns: ${isAmt ? rupee(d.rAmt) : fmtInt(d.rQty)}`;
+      svg += `<g><title>${esc(tip)}</title>`
+        + `<rect class="bar-s" x="${cx - bw - 1}" y="${mt + ph - hs}" width="${bw}" height="${Math.max(hs, d[sk] ? 1 : 0)}" rx="2"/>`
+        + `<rect class="bar-r" x="${cx + 1}" y="${mt + ph - hr}" width="${bw}" height="${Math.max(hr, d[rk] ? 1 : 0)}" rx="2"/></g>`;
+      if (i % step === 0) svg += `<text x="${cx}" y="${H - mb + 18}" text-anchor="middle">${labelOf(d.key)}</text>`;
+    });
+    el.innerHTML = svg + "</svg>";
+  }
+
+  function renderDayTable(dayList, tot) {
+    lastDays = dayList;
+    $("dashExportBtn").disabled = !dayList.length;
+    const rows = dayList.map((d) => {
+      const nq = d.sQty - d.rQty, na = d.sAmt - d.rAmt;
+      const rate = d.sQty ? ((d.rQty / d.sQty) * 100).toFixed(1) + "%" : (d.rQty ? "-" : "0.0%");
+      const dateCell = d.key === "undated" ? "No date" : `${labelOf(d.key, true)} <span class="muted">${weekdayOf(d.key)}</span>`;
+      return `<tr><td>${dateCell}</td><td class="num">${fmtInt(d.sQty)}</td><td class="num">${fmtMoney(d.sAmt)}</td>`
+        + `<td class="num">${fmtInt(d.rQty)}</td><td class="num">${fmtMoney(d.rAmt)}</td>${netCell(nq)}${netCell(na, true)}<td class="num">${rate}</td></tr>`;
+    }).join("");
+    const foot = dayList.length
+      ? `<tr><td>Total</td><td class="num">${fmtInt(tot.sQty)}</td><td class="num">${fmtMoney(tot.sAmt)}</td><td class="num">${fmtInt(tot.rQty)}</td>`
+        + `<td class="num">${fmtMoney(tot.rAmt)}</td>${netCell(tot.sQty - tot.rQty)}${netCell(tot.sAmt - tot.rAmt, true)}`
+        + `<td class="num">${tot.sQty ? ((tot.rQty / tot.sQty) * 100).toFixed(1) + "%" : "-"}</td></tr>` : "";
+    $("dashDayTable").innerHTML = table([
+      { t: "Date" }, { t: "Sales Qty", num: 1 }, { t: "Sales Amount", num: 1 }, { t: "Return Qty", num: 1 },
+      { t: "Return Amount", num: 1 }, { t: "Net Qty", num: 1 }, { t: "Net Amount", num: 1 }, { t: "Return %", num: 1 },
+    ], rows || emptyRow(8), foot);
+  }
+
+  function renderSide(mkts, states, skus, tot) {
+    const mrows = Array.from(mkts.entries()).sort((a, b) => b[1].sAmt - a[1].sAmt).map(([n, v]) =>
+      `<tr><td>${esc(n)}</td><td class="num">${fmtInt(v.sQty)}</td><td class="num">${fmtMoney(v.sAmt)}</td>`
+      + `<td class="num">${fmtInt(v.rQty)}</td><td class="num">${fmtMoney(v.rAmt)}</td>${netCell(v.sAmt - v.rAmt, true)}</tr>`).join("");
+    $("dashMarketTable").innerHTML = table([
+      { t: "Marketplace" }, { t: "Sales Qty", num: 1 }, { t: "Sales Amt", num: 1 }, { t: "Return Qty", num: 1 }, { t: "Return Amt", num: 1 }, { t: "Net Amt", num: 1 },
+    ], mrows || emptyRow(6));
+
+    const top = Array.from(states.entries()).sort((a, b) => b[1].sQty - a[1].sQty).slice(0, 10);
+    const srows = top.map(([n, v]) => {
+      const share = tot.sQty ? (v.sQty / tot.sQty) * 100 : 0;
+      return `<tr><td>${esc(n)}</td><td class="num">${fmtInt(v.sQty)}</td><td class="num">${fmtMoney(v.sAmt)}</td>`
+        + `<td><div class="bar-cell"><div class="bar"><span style="width:${share.toFixed(1)}%"></span></div><span class="muted">${share.toFixed(1)}%</span></div></td></tr>`;
+    }).join("");
+    $("dashStateTable").innerHTML = table([{ t: "State" }, { t: "Qty", num: 1 }, { t: "Amount", num: 1 }, { t: "Share" }], srows || emptyRow(4));
+
+    const topSku = Array.from(skus.entries()).sort((a, b) => b[1].sQty - a[1].sQty || b[1].rQty - a[1].rQty).slice(0, 15);
+    const krows = topSku.map(([n, v]) =>
+      `<tr><td>${esc(n)}</td><td class="num">${fmtInt(v.sQty)}</td><td class="num">${fmtMoney(v.sAmt)}</td>`
+      + `<td class="num">${fmtInt(v.rQty)}</td><td class="num">${v.sQty ? ((v.rQty / v.sQty) * 100).toFixed(1) + "%" : "-"}</td></tr>`).join("");
+    $("dashSkuTable").innerHTML = table([
+      { t: "SKU" }, { t: "Sales Qty", num: 1 }, { t: "Sales Amount", num: 1 }, { t: "Return Qty", num: 1 }, { t: "Return %", num: 1 },
+    ], krows || emptyRow(5));
+  }
+
+  function updateChips() {
+    const sc = $("dashSalesChip"), rc = $("dashReturnChip");
+    const s = appData.sales, r = appData.ret;
+    sc.classList.toggle("on", !!s);
+    rc.classList.toggle("on", !!r);
+    sc.lastElementChild.textContent = s ? `Sales: ${s.name} \u00b7 ${fmtInt(s.allRows.length)} rows` : "Sales: no file generated yet";
+    rc.lastElementChild.textContent = r ? `Returns: ${r.name} \u00b7 ${fmtInt(r.allRows.length)} rows` : "Returns: no file generated yet";
+  }
+
+  function refresh(force) {
+    if (!$("tab-dashboard").classList.contains("active")) { dirty = true; return; }
+    if (!force && !dirty) { /* still re-run - filters may have changed */ }
+    dirty = false;
+    try {
+      updateChips();
+      const { dayList, mkts, states, skus, tot } = compute();
+      renderKpis(tot, dayList, !!(appData.sales || appData.ret));
+      renderChart(dayList);
+      renderDayTable(dayList, tot);
+      renderSide(mkts, states, skus, tot);
+    } catch (e) {
+      console.error(e);
+      notify("Dashboard error: " + e.message, "error");
+    }
+  }
+  dashboardRefresh = (force) => {
+    if (!$("tab-dashboard").classList.contains("active")) { dirty = true; updateChips(); return; }
+    refresh(force);
+  };
+
+  $("dashFrom").addEventListener("change", () => dashboardRefresh());
+  $("dashTo").addEventListener("change", () => dashboardRefresh());
+  $("dashResetBtn").addEventListener("click", () => {
+    playSound("click");
+    $("dashFrom").value = ""; $("dashTo").value = "";
+    dashMarketplaceCtrl.reset();
+    dashboardRefresh();
+  });
+  $("dashMetricToggle").addEventListener("click", (e) => {
+    const b = e.target.closest("button[data-metric]");
+    if (!b) return;
+    playSound("click");
+    metric = b.dataset.metric;
+    $("dashMetricToggle").querySelectorAll("button").forEach((x) => x.classList.toggle("active", x === b));
+    renderChart(lastDays);
+  });
+  $("dashExportBtn").addEventListener("click", () => {
+    playSound("click");
+    if (!lastDays.length) return;
+    const headers = ["Date", "Sales Qty", "Sales Amount", "Return Qty", "Return Amount", "Net Qty", "Net Amount", "Return %"];
+    const rows = lastDays.map((d) => [
+      d.key === "undated" ? "No date" : `${d.key.slice(8)}-${d.key.slice(5, 7)}-${d.key.slice(0, 4)}`,
+      d.sQty, Math.round(d.sAmt * 100) / 100, d.rQty, Math.round(d.rAmt * 100) / 100,
+      d.sQty - d.rQty, Math.round((d.sAmt - d.rAmt) * 100) / 100, d.sQty ? Math.round((d.rQty / d.sQty) * 10000) / 100 : 0,
+    ]);
+    downloadXLSX(`Dashboard_DayWise_${new Date().toISOString().slice(0, 10).replace(/-/g, "")}.xlsx`, headers, rows);
+  });
+
+  // Draw the empty state on first load (dashboard tab is hidden initially; this keeps it ready).
+  dirty = true;
+})();
+
+
+// ============================================================================
+// SETTINGS TAB
+// ============================================================================
+function refreshHistoryStatus() {
+  const count = Object.keys(loadHistory()).length;
+  const el = document.getElementById("historyStatus");
+  if (el) el.textContent = `${count} order/SKU entries stored in this browser.`;
+}
+
+// ---- Mapping profiles ----------------------------------------------------
+// Only "Sales - Current" exists today, built from MAPPING_DATA above (single
+// source of truth - this view never hardcodes the mapping separately). Add
+// more entries here later (e.g. a future revised mapping) and they'll show
+// up in the Settings dropdown automatically - no other code changes needed.
+const MAPPING_PROFILES = {
+  "Sales - Current": MAPPING_DATA,
+};
+
+function renderMappingTable(profileName) {
+  const rows = MAPPING_PROFILES[profileName] || MAPPING_DATA;
+  let html = "<thead><tr><th>SAP Field</th><th>Unicommerce Header</th></tr></thead><tbody>";
+  for (const [sap, uc] of rows) {
+    html += `<tr><td>${sap}</td><td>${uc === null ? '<i style="color:var(--muted)">(always blank)</i>' : uc}</td></tr>`;
+  }
+  html += "</tbody>";
+  document.getElementById("mappingTable").innerHTML = html;
+}
+
+(function settingsTabInit() {
+  document.getElementById("exportHistoryBtn").addEventListener("click", () => {
+    playSound("click");
+    const history = loadHistory();
+    const blob = new Blob([JSON.stringify(history, null, 2)], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `uc_sap_sales_history_${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  });
+
+  const importInput = document.getElementById("importHistoryInput");
+  document.getElementById("importHistoryBtn").addEventListener("click", () => { playSound("click"); importInput.click(); });
+  importInput.addEventListener("change", async () => {
+    if (!importInput.files.length) return;
+    try {
+      const text = await readFileAsText(importInput.files[0]);
+      const incoming = JSON.parse(text);
+      const changed = mergeHistory(incoming);
+      notify(`Imported. ${changed} new/updated order-SKU entries merged into this browser's history.`);
+      refreshHistoryStatus();
+      playSound("success");
+    } catch (e) {
+      notify("Could not import that file: " + e.message);
+      playSound("error");
+    }
+    importInput.value = "";
+  });
+
+  document.getElementById("clearHistoryBtn").addEventListener("click", () => {
+    playSound("click");
+    if (confirm("This deletes the saved Order/SKU -> Shipping Package Code lookup used for Return RP Code "
+      + "matching in this browser. Future Returns won't resolve RP Code until Sales files are processed "
+      + "again. Continue?")) {
+      localStorage.removeItem(LS_HISTORY);
+      refreshHistoryStatus();
+    }
+  });
+
+  const profileSelect = document.getElementById("mappingProfileSelect");
+  Object.keys(MAPPING_PROFILES).forEach((name) => {
+    const opt = document.createElement("option");
+    opt.value = name; opt.textContent = name;
+    profileSelect.appendChild(opt);
+  });
+  profileSelect.addEventListener("change", () => { playSound("click"); renderMappingTable(profileSelect.value); });
+  renderMappingTable(profileSelect.value);
+
+  document.getElementById("mappingInfo").textContent =
+    `${MAPPING_DATA.length} SAP fields are mapped. To add another mapping version selectable from the dropdown ` +
+    `above, add an entry to MAPPING_PROFILES near the top of the embedded script.`;
+})();
+
+// ============================================================================
+// ABOUT TAB
+// ============================================================================
+(function aboutTabInit() {
+  const channelLines = CHANNEL_PATTERNS.map(([name, pattern]) => `   ${name.padEnd(14)} ${pattern}`).join("\n");
+  document.getElementById("aboutText").textContent =
+`A fully offline, browser-based tool that converts Unicommerce Sales and Return exports into
+SAP-ready upload files. Nothing is uploaded anywhere - all processing happens on your computer,
+in this browser tab. Files never leave your machine.
+
+Sales Upload uses a fixed, built-in header mapping (MAPPING_DATA) - the daily process needs no
+configuration. If Unicommerce ever renames a column, edit MAPPING_DATA near the top of the
+embedded script in this file.
+
+Return Upload reads the Return report, computes Total as raw Total minus Other charges and
+Other charges1, computes Unit Price as raw Total / Qty, and looks up RP Code by matching Sale
+Order Number + Product SKU Code against Sales history built from every Sales Upload run in
+this browser.
+
+Channel detection patterns (regex, matched against Display Order Code):
+${channelLines}
+   Anything else is labeled 'Other' rather than guessed.
+
+Sales history and preferences are stored in this browser's local storage only - they are not
+shared automatically across computers or browsers. Use Export/Import History under Settings to
+move Sales history between machines (e.g. after processing Sales on one depot's PC, export the
+history and import it on the PC that processes Returns).
+
+Marketplace filter on the Sales tab now supports selecting multiple marketplaces at once
+(checkbox multi-select) - leaving it empty or selecting all marketplaces behaves exactly like
+the previous "All marketplaces" option.
+
+Changing the marketplace selection after a file has been generated instantly refreshes the
+summary, breakdown, preview and download for just those marketplaces. The Dashboard tab shows
+day-wise Sales and Return quantity and amount, with its own marketplace and date filters.`;
+})();
+refreshHistoryStatus();
+
+
+</script>
+</body>
+</html>
