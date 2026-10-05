@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>UC to SAP Order Upload Mapper</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Inter:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&family=Nunito:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Poppins:wght@400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
 <style>
   :root {
@@ -22,19 +25,79 @@
     --font: Inter, "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
     color-scheme: light;
   }
-  [data-theme="dark"] {
-    --bg: #0E131B; --surface: #151C27; --surface-2: #1A2331; --border: #263143; --border-strong: #34425A;
-    --text: #E6EDF7; --text-2: #C3CEDF; --muted: #8A98AE;
-    --accent: #5B9BFF; --accent-hover: #7FB0FF; --accent-soft: rgba(91,155,255,0.14); --accent-rgb: 91,155,255;
+  /* ---------- Themes ---------- */
+  /* Shared dark base */
+  [data-theme="midnight"], [data-theme="graphite"], [data-theme="neon"], [data-theme="ember"] {
     --success: #3DBE9A; --success-soft: rgba(61,190,154,0.14); --success-rgb: 61,190,154;
     --danger: #F07167; --danger-soft: rgba(240,113,103,0.14); --danger-rgb: 240,113,103;
     --warn: #E0A93B; --warn-soft: rgba(224,169,59,0.14);
-    --track: #263143; --log-bg: #0A0F16; --log-fg: #B8C6DB;
     --shadow-sm: 0 1px 2px rgba(0,0,0,0.3);
     --shadow: 0 1px 3px rgba(0,0,0,0.35), 0 4px 14px rgba(0,0,0,0.25);
     --shadow-lg: 0 12px 40px rgba(0,0,0,0.55);
     color-scheme: dark;
   }
+  /* Light themes */
+  [data-theme="ocean"] {
+    --bg: #EEF6F8; --surface: #FFFFFF; --surface-2: #F3FAFB; --border: #D6E6EA; --border-strong: #B7D0D6;
+    --text: #0B2A33; --text-2: #25474F; --muted: #5C7C85;
+    --accent: #0A7F8F; --accent-hover: #086674; --accent-soft: #DDF1F4; --accent-rgb: 10,127,143;
+    --track: #D6E6EA; --font: "Manrope", "Segoe UI", system-ui, sans-serif;
+  }
+  [data-theme="emerald"] {
+    --bg: #F1F7F3; --surface: #FFFFFF; --surface-2: #F6FBF8; --border: #DCEAE1; --border-strong: #BDD5C7;
+    --text: #12281D; --text-2: #2F4B3C; --muted: #66806F;
+    --accent: #14804A; --accent-hover: #0F663B; --accent-soft: #DFF3E7; --accent-rgb: 20,128,74;
+    --success: #14804A; --success-soft: #DFF3E7; --success-rgb: 20,128,74;
+    --track: #DCEAE1; --font: "Nunito", "Segoe UI", system-ui, sans-serif;
+  }
+  [data-theme="royal"] {
+    --bg: #F5F3FB; --surface: #FFFFFF; --surface-2: #FAF9FE; --border: #E4E0F2; --border-strong: #CAC3E4;
+    --text: #1C1633; --text-2: #3D3560; --muted: #716A94;
+    --accent: #5B3CC4; --accent-hover: #4A2FA5; --accent-soft: #ECE7FA; --accent-rgb: 91,60,196;
+    --track: #E4E0F2; --font: "Poppins", "Segoe UI", system-ui, sans-serif;
+  }
+  [data-theme="sunset"] {
+    --bg: #FBF5EF; --surface: #FFFFFF; --surface-2: #FEF9F4; --border: #F0E2D4; --border-strong: #E2CBB4;
+    --text: #2B1A10; --text-2: #5A3D2A; --muted: #8C6F5A;
+    --accent: #D2580F; --accent-hover: #B2480A; --accent-soft: #FCE9DB; --accent-rgb: 210,88,15;
+    --track: #F0E2D4; --font: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+  }
+  /* Dark themes */
+  [data-theme="midnight"] {
+    --bg: #0E131B; --surface: #151C27; --surface-2: #1A2331; --border: #263143; --border-strong: #34425A;
+    --text: #E6EDF7; --text-2: #C3CEDF; --muted: #8A98AE;
+    --accent: #5B9BFF; --accent-hover: #7FB0FF; --accent-soft: rgba(91,155,255,0.14); --accent-rgb: 91,155,255;
+    --track: #263143; --log-bg: #0A0F16; --log-fg: #B8C6DB; --font: "Inter", "Segoe UI", system-ui, sans-serif;
+  }
+  [data-theme="graphite"] {
+    --bg: #121212; --surface: #1C1C1E; --surface-2: #232326; --border: #2E2E32; --border-strong: #44444A;
+    --text: #F2F2F3; --text-2: #D0D0D4; --muted: #94949C;
+    --accent: #34C3A0; --accent-hover: #5AD4B6; --accent-soft: rgba(52,195,160,0.14); --accent-rgb: 52,195,160;
+    --track: #2E2E32; --log-bg: #0B0B0C; --log-fg: #C4C4CA; --font: "DM Sans", "Segoe UI", system-ui, sans-serif;
+  }
+  [data-theme="neon"] {
+    --bg: #0F0B1E; --surface: #181331; --surface-2: #1E1840; --border: #2D2556; --border-strong: #433A7A;
+    --text: #EEEAFF; --text-2: #CFC8F5; --muted: #968FC4;
+    --accent: #B58CFF; --accent-hover: #CBA9FF; --accent-soft: rgba(181,140,255,0.16); --accent-rgb: 181,140,255;
+    --track: #2D2556; --log-bg: #09061A; --log-fg: #C5BEF0; --font: "Space Grotesk", "Segoe UI", system-ui, sans-serif;
+  }
+  [data-theme="ember"] {
+    --bg: #17110D; --surface: #211812; --surface-2: #29201A; --border: #3A2D24; --border-strong: #554335;
+    --text: #F7EEE6; --text-2: #DDCDBF; --muted: #A68F7D;
+    --accent: #FF9A4D; --accent-hover: #FFB174; --accent-soft: rgba(255,154,77,0.15); --accent-rgb: 255,154,77;
+    --track: #3A2D24; --log-bg: #100B08; --log-fg: #D9C8B8; --font: "Plus Jakarta Sans", "Segoe UI", system-ui, sans-serif;
+  }
+
+  /* Theme picker */
+  .theme-dropdown { position: relative; }
+  .theme-panel { display: none; position: absolute; right: 0; top: calc(100% + 6px); width: 230px; background: var(--surface); border: 1px solid var(--border-strong); border-radius: var(--radius); box-shadow: var(--shadow-lg); padding: 6px; z-index: 70; }
+  .theme-dropdown.open .theme-panel { display: block; }
+  .theme-group { font-size: 10px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding: 8px 10px 4px; }
+  .theme-item { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: var(--radius-sm); cursor: pointer; font-size: 13px; font-weight: 600; color: var(--text); }
+  .theme-item:hover { background: var(--surface-2); }
+  .theme-item.active { background: var(--accent-soft); color: var(--accent); }
+  .theme-item .sw { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--surface); box-shadow: 0 0 0 1px var(--border-strong); flex: none; }
+  .theme-item .tf { margin-left: auto; font-size: 11px; font-weight: 500; color: var(--muted); }
 
   * { box-sizing: border-box; }
   html { -webkit-text-size-adjust: 100%; }
@@ -268,9 +331,12 @@
       <button type="button" class="icon-btn on" id="soundQuickToggle" title="Toggle sound">
         <i class="fa-solid fa-volume-high" id="soundQuickIcon"></i><span class="hide-sm" id="soundQuickLabel">Sound On</span>
       </button>
-      <button type="button" class="icon-btn" id="themeToggle" title="Switch light / dark theme">
-        <i class="fa-solid fa-moon" id="themeIcon"></i><span class="hide-sm" id="themeLabel">Dark</span>
-      </button>
+      <div class="theme-dropdown" id="themeDropdown">
+        <button type="button" class="icon-btn" id="themeToggle" title="Choose theme">
+          <i class="fa-solid fa-palette" id="themeIcon"></i><span class="hide-sm" id="themeLabel">Theme</span>
+        </button>
+        <div class="theme-panel" id="themePanel"></div>
+      </div>
     </div>
   </div>
 </header>
@@ -278,9 +344,9 @@
 <div class="container">
   <div class="nav">
     <div class="nav-tabs">
-      <button class="tab-btn" data-tab="dashboard"><i class="fa-solid fa-chart-line"></i> Dashboard</button>
       <button class="tab-btn active" data-tab="sales"><i class="fa-solid fa-cart-shopping"></i> Sales Upload</button>
       <button class="tab-btn" data-tab="return"><i class="fa-solid fa-rotate-left"></i> Return Upload</button>
+      <button class="tab-btn" data-tab="dashboard"><i class="fa-solid fa-chart-line"></i> Dashboard</button>
     </div>
     <div class="menu-dropdown" id="menuDropdown">
       <button type="button" class="menu-btn" id="menuToggle"><i class="fa-solid fa-bars"></i> Menu</button>
@@ -295,7 +361,7 @@
     <div class="page-head">
       <div>
         <h2>Dashboard</h2>
-        <p class="muted">Day-wise sales and return overview, built from the files you have generated in this session.</p>
+        <p class="muted">Day-wise sales (by PO date) and return overview, built from the files you have generated in this session.</p>
       </div>
       <div class="dash-filters">
         <div class="field-group"><label>Marketplace</label><div class="ms-dropdown" id="dashMarketplaceDropdown">
@@ -312,7 +378,7 @@
             <div class="ms-options" id="dashMarketplaceOptions"></div>
           </div>
         </div></div>
-        <div class="field-group"><label>From</label><input type="date" id="dashFrom"></div>
+        <div class="field-group"><label>PO / return date from</label><input type="date" id="dashFrom"></div>
         <div class="field-group"><label>To</label><input type="date" id="dashTo"></div>
         <button id="dashResetBtn"><i class="fa-solid fa-rotate-left"></i> Reset</button>
         <button id="dashExportBtn" disabled><i class="fa-solid fa-file-excel"></i> Export day-wise</button>
@@ -340,7 +406,7 @@
     <div class="panel">
       <div class="panel-head"><div class="panel-title"><i class="fa-solid fa-calendar-days"></i> Day-wise summary</div></div>
       <div class="table-scroll" style="max-height:440px;"><table class="breakdown-table" id="dashDayTable"></table></div>
-      <p class="footnote">Sales Qty counts order lines (one per unit in the Unicommerce dump) and Sales Amount is the Total Price. Return Qty is the sum of the Qty column and Return Amount is the Total after other charges, as sent to SAP. Net = Sales &minus; Returns for the same day (returns may relate to earlier sales).</p>
+      <p class="footnote">Sales Qty counts order lines (one per unit in the Unicommerce dump) and Sales Amount is the Total Price. Return Qty is the sum of the Qty column and Return Amount is the Total after other charges, as sent to SAP. Sales are grouped by PO date (the order date sent as ORDER_DATE); returns by their return Date. Net = Sales &minus; Returns for the same day (returns may relate to earlier sales).</p>
     </div>
 
     <div class="grid-2">
@@ -388,7 +454,13 @@
         </div>
         <span class="live-hint"><i class="fa-solid fa-bolt"></i> Applies instantly to the summary, preview and download once a file is generated</span>
       </div>
-      
+      <div class="field-row" style="align-items:flex-end;">
+        <label class="field-label" style="padding-bottom:9px;"><i class="fa-solid fa-calendar-day"></i> PO date</label>
+        <div class="field-group"><label>From</label><input type="date" id="salesPoFrom"></div>
+        <div class="field-group"><label>To</label><input type="date" id="salesPoTo"></div>
+        <button type="button" id="salesPoClear"><i class="fa-solid fa-xmark"></i> Clear dates</button>
+        <span class="live-hint" style="padding-bottom:9px;"><i class="fa-solid fa-bolt"></i> Optional &mdash; only sales whose PO (order) date falls in this range are picked</span>
+      </div>
       <div class="section-label" style="margin-top:18px;"><i class="fa-solid fa-file-arrow-up"></i> Today's Unicommerce dump file (.csv or .xlsx)</div>
       <div class="dropzone" id="salesDropzone" tabindex="0">
         <div class="dropzone-left">
@@ -1101,6 +1173,21 @@ const LS_HISTORY = "uc_sap_sales_history";
 // ---- Shared in-memory data used by the Dashboard ---------------------------
 const appData = { sales: null, ret: null };
 
+// ---- Date helpers (shared by the Sales PO-date filter and the Dashboard) ----
+const ORDER_DATE_UC = MAPPING_DATA.find(([sap]) => sap === "ORDER_DATE")[1]; // PO / order date column in the UC dump
+// Normalises any supported date value to YYYY-MM-DD (null if unreadable).
+function dayKeyFrom(value) {
+  if (value === null || value === undefined || value === "") return null;
+  const f = formatDateValue(value);
+  if (f) {
+    const m = String(f).match(/^(\d{2})-(\d{2})-(\d{4})/);
+    if (m) return `${m[3]}-${m[2]}-${m[1]}`;
+  }
+  const d = new Date(value);
+  if (!isNaN(d.getTime())) return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+  return null;
+}
+
 // ---- Small UI utilities -----------------------------------------------------
 function esc(s) {
   return String(s == null ? "" : s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
@@ -1216,20 +1303,52 @@ function playSound(event) {
 }
 
 
-// ---- Theme (light / dark) ---------------------------------------------------
-function applyTheme(name, opts = {}) {
-  const dark = name === "dark";
-  document.documentElement.setAttribute("data-theme", dark ? "dark" : "");
-  document.getElementById("themeIcon").className = dark ? "fa-solid fa-sun" : "fa-solid fa-moon";
-  document.getElementById("themeLabel").textContent = dark ? "Light" : "Dark";
-  try { localStorage.setItem(LS_THEME, dark ? "dark" : "light"); } catch (e) {}
+// ---- Themes (colour + font) ---------------------------------------------------
+const THEMES = [
+  { id: "corporate", name: "Corporate Blue", font: "Inter", color: "#1E4FA8", dark: false },
+  { id: "ocean", name: "Ocean Teal", font: "Manrope", color: "#0A7F8F", dark: false },
+  { id: "emerald", name: "Emerald", font: "Nunito", color: "#14804A", dark: false },
+  { id: "royal", name: "Royal Purple", font: "Poppins", color: "#5B3CC4", dark: false },
+  { id: "sunset", name: "Sunset Orange", font: "Plus Jakarta Sans", color: "#D2580F", dark: false },
+  { id: "midnight", name: "Midnight Blue", font: "Inter", color: "#5B9BFF", dark: true },
+  { id: "graphite", name: "Graphite Mint", font: "DM Sans", color: "#34C3A0", dark: true },
+  { id: "neon", name: "Neon Night", font: "Space Grotesk", color: "#B58CFF", dark: true },
+  { id: "ember", name: "Ember Glow", font: "Plus Jakarta Sans", color: "#FF9A4D", dark: true },
+];
+function applyTheme(id, opts = {}) {
+  if (id === "dark") id = "midnight";            // older saved values
+  const theme = THEMES.find((t) => t.id === id) || THEMES[0];
+  document.documentElement.setAttribute("data-theme", theme.id);
+  document.getElementById("themeLabel").textContent = theme.name;
+  document.querySelectorAll(".theme-item").forEach((el) => el.classList.toggle("active", el.dataset.theme === theme.id));
+  try { localStorage.setItem(LS_THEME, theme.id); } catch (e) {}
   if (!opts.silent) playSound("theme");
 }
-document.getElementById("themeToggle").addEventListener("click", () => {
-  applyTheme(document.documentElement.getAttribute("data-theme") === "dark" ? "light" : "dark");
-  dashboardRefresh(true);
-});
-applyTheme(localStorage.getItem(LS_THEME) === "dark" ? "dark" : "light", { silent: true });
+(function themePickerInit() {
+  const dropdown = document.getElementById("themeDropdown");
+  const panel = document.getElementById("themePanel");
+  let html = "";
+  [["Light themes", false], ["Dark themes", true]].forEach(([title, dark]) => {
+    html += `<div class="theme-group">${title}</div>`;
+    THEMES.filter((t) => t.dark === dark).forEach((t) => {
+      html += `<div class="theme-item" data-theme="${t.id}"><span class="sw" style="background:${t.color}"></span>${t.name}<span class="tf" style="font-family:'${t.font}',sans-serif">${t.font}</span></div>`;
+    });
+  });
+  panel.innerHTML = html;
+  document.getElementById("themeToggle").addEventListener("click", (e) => {
+    e.stopPropagation();
+    dropdown.classList.toggle("open");
+  });
+  panel.addEventListener("click", (e) => {
+    const item = e.target.closest(".theme-item");
+    if (!item) return;
+    applyTheme(item.dataset.theme);
+    dropdown.classList.remove("open");
+  });
+  document.addEventListener("click", (e) => { if (!dropdown.contains(e.target)) dropdown.classList.remove("open"); });
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") dropdown.classList.remove("open"); });
+})();
+applyTheme(localStorage.getItem(LS_THEME) || "corporate", { silent: true });
 
 // ---- Sound toggle -----------------------------------------------------------
 const soundToggleEl = document.getElementById("soundToggle");
@@ -1916,6 +2035,8 @@ function setScopeText(prefix, isAll, sel, kept, total) {
   const statusEl = document.getElementById("salesStatus");
   const stepsEl = document.getElementById("salesSteps");
   const logEl = document.getElementById("salesLog");
+  const poFrom = document.getElementById("salesPoFrom");
+  const poTo = document.getElementById("salesPoTo");
 
   let currentFile = null;
   let lastResult = null; // { outputRows, headers }
@@ -1975,16 +2096,31 @@ function setScopeText(prefix, isAll, sel, kept, total) {
     sheetRow.style.display = "none";
     logEl.textContent = "";
     salesMarketplaceCtrl.reset();
+    poFrom.value = ""; poTo.value = "";
     clearResults();
   });
 
-  // Runs the real pipeline (filter -> build rows) for the current marketplace selection.
+  // Runs the real pipeline (filter -> build rows) for the current marketplace + PO date selection.
   function selectRows() {
     const { headerIndex, allRows } = ctx;
     const { sel, isAll } = selectionOf(salesMarketplaceCtrl);
     let dataRows = allRows;
     if (!isAll) dataRows = filterRowsByChannels(headerIndex, allRows, sel);
-    return { headerIndex, allRows, sel, isAll, dataRows };
+    const from = poFrom.value, to = poTo.value;
+    const di = headerIndex[norm(ORDER_DATE_UC)];
+    const dateActive = !!(from || to) && di !== undefined;
+    if (dateActive) {
+      dataRows = dataRows.filter((row) => {
+        const k = dayKeyFrom(row[di]);
+        return !!k && (!from || k >= from) && (!to || k <= to);
+      });
+    }
+    return { headerIndex, allRows, sel, isAll, dataRows, dateActive, from, to };
+  }
+  function scopeLabel(view) {
+    const parts = [view.isAll ? "All marketplaces" : view.sel.join(", ")];
+    if (view.dateActive) parts.push(`PO date ${view.from || "start"} to ${view.to || "end"}`);
+    return parts.join(" \u00b7 ");
   }
 
   function showResults(view, outputRows) {
@@ -1993,11 +2129,11 @@ function setScopeText(prefix, isAll, sel, kept, total) {
     const outputValue = sumOutputValue(outputRows);
     updateSummaryCards("sales", inputQty, outputRows.length, inputValue, outputValue);
     updateMatchIndicator("sales", inputQty, outputRows.length, inputValue, outputValue, { mode: "SALES" });
-    if (!view.isAll) {
+    if (!view.isAll || view.dateActive) {
       const mi = document.getElementById("salesMatchIndicator");
-      mi.textContent = `Filter applied (${view.sel.join(", ")}): ${fmtInt(view.dataRows.length)} of ${fmtInt(view.allRows.length)} input rows kept. ` + mi.textContent;
+      mi.textContent = `Filter applied (${scopeLabel(view)}): ${fmtInt(view.dataRows.length)} of ${fmtInt(view.allRows.length)} input rows kept. ` + mi.textContent;
     }
-    setScopeText("sales", view.isAll, view.sel, view.dataRows.length, view.allRows.length);
+    setScopeText("sales", view.isAll && !view.dateActive, [scopeLabel(view)], view.dataRows.length, view.allRows.length);
     renderMarketplaceBreakdown(
       "salesBreakdownWrap", "salesBreakdownTable", view.headerIndex, view.dataRows, outputRows,
       "Display Order Code",
@@ -2018,12 +2154,19 @@ function setScopeText(prefix, isAll, sel, kept, total) {
       mergeHistory(buildHistoryUpdates(view.headerIndex, view.dataRows));
       refreshHistoryStatus();
       showResults(view, outputRows);
-      logMsg(logEl, `Marketplace selection changed (${view.isAll ? "All marketplaces" : view.sel.join(", ")}): ${outputRows.length} rows.`);
+      logMsg(logEl, `Filter changed (${scopeLabel(view)}): ${outputRows.length} rows.`);
     } catch (e) {
       logMsg(logEl, "ERROR: " + e.message);
       notify(e.message, "error");
     }
   }, 180);
+  poFrom.addEventListener("change", () => salesSelectionChanged());
+  poTo.addEventListener("change", () => salesSelectionChanged());
+  document.getElementById("salesPoClear").addEventListener("click", () => {
+    playSound("click");
+    poFrom.value = ""; poTo.value = "";
+    salesSelectionChanged();
+  });
 
   generateBtn.addEventListener("click", async () => {
     if (!currentFile) { notify("Please select a Unicommerce dump file first.", "error"); return; }
@@ -2054,8 +2197,8 @@ function setScopeText(prefix, isAll, sel, kept, total) {
 
       setProgress(progressWrap, progressFill, statusEl, stepsEl, 35, "Mapping marketplaces...");
       const view = selectRows();
-      if (!view.isAll) {
-        logMsg(logEl, `Marketplace filter (${view.sel.join(", ")}): kept ${view.dataRows.length} of ${allRows.length} rows.`);
+      if (!view.isAll || view.dateActive) {
+        logMsg(logEl, `Filter (${scopeLabel(view)}): kept ${view.dataRows.length} of ${allRows.length} rows.`);
       }
       await yieldToUI();
 
@@ -2382,25 +2525,12 @@ function setScopeText(prefix, isAll, sel, kept, total) {
   const $ = (id) => document.getElementById(id);
   const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
   const WEEKDAYS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-  const ORDER_DATE_UC = MAPPING_DATA.find(([sap]) => sap === "ORDER_DATE")[1];
   const RETURN_TOTAL_IDX = RETURN_OUTPUT_COLUMNS.indexOf("Total");
 
   let metric = "amt";
   let dirty = true;
   let lastDays = [];
 
-  // Normalises any supported date value to YYYY-MM-DD (null if unreadable).
-  function dayKeyFrom(value) {
-    if (value === null || value === undefined || value === "") return null;
-    const f = formatDateValue(value);
-    if (f) {
-      const m = String(f).match(/^(\d{2})-(\d{2})-(\d{4})/);
-      if (m) return `${m[3]}-${m[2]}-${m[1]}`;
-    }
-    const d = new Date(value);
-    if (!isNaN(d.getTime())) return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
-    return null;
-  }
   function labelOf(key, withYear) {
     const [y, m, d] = key.split("-").map(Number);
     return `${pad2(d)} ${MONTHS[m - 1]}` + (withYear ? ` ${y}` : "");
